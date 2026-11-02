@@ -170,9 +170,13 @@ describe('Repo', () => {
 
   it('listSessions summarises, newest first', () => {
     const a = repo.createBatch(sid, 4).id;
-    repo.saveDecision(a, dec('1', { dest: 'archive' }));
-    repo.saveDecision(a, dec('2', { dest: 'label:Travel', who: 'you', important: true }));
-    repo.saveDecision(a, dec('3', { dest: 'keep', who: 'you' }));
+    repo.saveDecision(a, dec('1', { dest: 'archive', status: 'auto_applied' }));
+    repo.saveDecision(a, dec('2', { dest: 'label:Travel', who: 'you', important: true, status: 'applied' }));
+    repo.saveDecision(a, dec('3', { dest: 'keep', who: 'you', status: 'applied' }));
+    // Not counted: dry run, proposed, failed.
+    repo.saveDecision(a, dec('d', { dest: 'archive', status: 'auto_applied', note: 'dry run' }));
+    repo.saveDecision(a, dec('p', { dest: 'archive' }));
+    repo.saveDecision(a, dec('f', { dest: 'archive', status: 'failed', note: 'apply: x' }));
     repo.setBatchStatus(a, 'applied');
     const gone = repo.createBatch(sid, 6).id;
     repo.saveDecision(gone, dec('4', { dest: 'archive' }));
@@ -200,6 +204,7 @@ describe('Repo', () => {
     repo.saveDecision(a, dec('4', { dest: 'archive', status: 'auto_applied', note: 'dry run' }));
     repo.saveDecision(a, dec('5', { dest: 'archive', status: 'proposed' }));
     repo.saveDecision(a, dec('6', { dest: 'archive', status: 'skipped', note: 'changed in Gmail' }));
+    repo.saveDecision(a, dec('i', { dest: 'label:Home', important: true, status: 'applied' }));
     repo.setBatchStatus(a, 'applied');
     const gone = repo.createBatch(sid, 1).id;
     repo.saveDecision(gone, dec('7', { dest: 'archive', status: 'auto_applied' }));
@@ -210,7 +215,7 @@ describe('Repo', () => {
     repo.saveDecision(run, dec('9', { dest: 'archive', who: 'you', status: 'failed' }));
     const open = repo.createBatch(sid, 2).id;
     repo.setBatchStatus(open, 'reviewing');
-    expect(repo.stats()).toEqual({ archived: 1, filed: 1, kept: 1, askedYou: 3, decided: 5, important: 1, unfinished: 2 });
+    expect(repo.stats()).toEqual({ archived: 1, filed: 2, kept: 1, askedYou: 3, decided: 6, important: 1, unfinished: 2 });
   });
 
   it('lastBatchId skips empty batches, unless every batch is empty', () => {
@@ -332,4 +337,16 @@ it('adds the dry_run column to a database created before it existed', () => {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+describe('Repo session split', () => {
+  it('a pure dry-run session has an empty split', () => {
+    const repo = new Repo(':memory:');
+    const sid = repo.createSession().id;
+    const b = repo.createBatch(sid, 2, true).id;
+    repo.saveDecision(b, dec('1', { dest: 'archive', status: 'auto_applied', note: 'dry run' }));
+    repo.saveDecision(b, dec('2', { dest: 'keep', who: 'you', important: true, status: 'applied', note: 'dry run' }));
+    repo.setBatchStatus(b, 'applied');
+    expect(repo.listSessions()[0].split).toEqual({ archived: 0, filed: 0, kept: 0, you: 0, important: 0 });
+  });
 });

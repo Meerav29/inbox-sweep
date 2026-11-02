@@ -260,7 +260,8 @@ export class Repo {
         COALESCE(SUM(d.who = 'you'), 0) AS you,
         COALESCE(SUM(d.important = 1), 0) AS important
       FROM decisions d JOIN batches b ON b.id = d.batch_id
-      WHERE b.session_id = ? AND b.status != 'discarded'`);
+      WHERE b.session_id = ? AND b.status != 'discarded'
+        AND d.status IN ('applied', 'auto_applied') AND COALESCE(d.note, '') != 'dry run'`);
     const openStmt = this.db.prepare(
       `SELECT id FROM batches WHERE session_id = ? AND status IN ('running', 'reviewing', 'applying') ORDER BY rowid DESC LIMIT 1`);
 
@@ -298,7 +299,7 @@ export class Repo {
         COALESCE(SUM(d.dest = 'archive'), 0) AS archived,
         COALESCE(SUM(d.dest LIKE 'label:%'), 0) AS filed,
         COALESCE(SUM(d.dest = 'keep'), 0) AS kept,
-        COALESCE(SUM(d.important = 1), 0) AS important
+        COALESCE(SUM(d.important = 1 AND d.dest = 'keep'), 0) AS important
       FROM decisions d JOIN batches b ON b.id = d.batch_id
       WHERE b.status != 'discarded' AND d.status IN ('applied', 'auto_applied') AND COALESCE(d.note, '') != 'dry run'`)
       .get() as Pick<Stats, 'archived' | 'filed' | 'kept' | 'important'>;

@@ -122,6 +122,7 @@ test('Home renders the stat tiles from /api/stats', async () => {
   expect(tiles.getByText('13%')).toBeTruthy(); // 25 of 200, rounded
   expect(tiles.getByText('25 of 200 emails')).toBeTruthy();
   expect(tiles.getByText('7')).toBeTruthy();
+  expect(tiles.getByText('flagged important, left in inbox')).toBeTruthy();
   expect(tiles.getByText('2')).toBeTruthy();
 });
 

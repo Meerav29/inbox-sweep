@@ -146,7 +146,7 @@ export function Home({ onSession, onReview, onPast, onFolders }: Props) {
         <Tile icon="folder" tint={TEAL} label="Filed into folders" big={n(stats?.filed)} sub="all time" />
         <Tile icon="asked" tint={keepColor} label="Asked you" big={askedPct}
           sub={stats ? `${stats.askedYou ?? 0} of ${decided} emails` : 'of decided emails'} />
-        <Tile icon="flag" tint={RED} label="Important kept" big={n(stats?.important)} sub={stats ? `${stats.kept ?? 0} kept in your inbox` : 'kept in your inbox'} />
+        <Tile icon="flag" tint={RED} label="Important kept" big={n(stats?.important)} sub="flagged important, left in inbox" />
         <Tile icon="clock" tint={AMBER} label="Unfinished batches" big={n(stats?.unfinished)}
           sub={unfinished
             ? <button type="button" className="linkbtn" disabled={starting} onClick={() => resume(unfinished)}>Resume unfinished batch</button>
