@@ -204,10 +204,13 @@ describe('Repo', () => {
     const gone = repo.createBatch(sid, 1).id;
     repo.saveDecision(gone, dec('7', { dest: 'archive', status: 'auto_applied' }));
     repo.setBatchStatus(gone, 'discarded');
-    repo.createBatch(sid, 2); // running
+    const run = repo.createBatch(sid, 2).id; // running
+    // Decided by you but not applied yet: counts toward askedYou. A failed one does not.
+    repo.saveDecision(run, dec('8', { dest: 'label:Work', who: 'you', status: 'proposed' }));
+    repo.saveDecision(run, dec('9', { dest: 'archive', who: 'you', status: 'failed' }));
     const open = repo.createBatch(sid, 2).id;
     repo.setBatchStatus(open, 'reviewing');
-    expect(repo.stats()).toEqual({ archived: 1, filed: 1, kept: 1, askedYou: 2, decided: 3, important: 1, unfinished: 2 });
+    expect(repo.stats()).toEqual({ archived: 1, filed: 1, kept: 1, askedYou: 3, decided: 5, important: 1, unfinished: 2 });
   });
 
   it('lastBatchId skips empty batches, unless every batch is empty', () => {

@@ -102,9 +102,9 @@ a{color:var(--strong)}
 .feed .lbl,.live .lbl{display:flex;justify-content:space-between;gap:8px}
 .feed{border-right:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
 .tick{list-style:none;padding:0;display:flex;flex-direction:column;gap:4px;overflow:auto;max-height:calc(100vh - 120px)}
-.trow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;border-radius:6px;padding:6px 8px;font-size:13px;background:var(--selected);border:1px solid transparent}
+.trow{display:grid;grid-template-columns:minmax(4.5em,1fr) minmax(0,max-content);gap:8px;align-items:center;border-radius:6px;padding:6px 8px;font-size:13px;background:var(--selected);border:1px solid transparent}
 .trow .w{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--strong)}
-.trow .to{color:var(--subtle);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.trow .to{color:var(--subtle);white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis}
 .trow .to.pill{font-size:12px;padding:0 8px}
 .trow.ask{background:#fff;border:1px dashed var(--strong)}
 .trow.you .to{color:var(--strong);font-weight:500}
@@ -225,6 +225,7 @@ a{color:var(--strong)}
 .chip.sel{border-color:var(--strong)}
 .chip.moved{outline:1px dashed var(--strong);outline-offset:-1px}
 .chip.done{background:var(--selected);padding-right:22px}
+.board.review .chip.done{padding-right:26px}
 .chip.done b{color:var(--subtle);font-weight:400}
 .board.review .chip .pill{display:inline-block;margin-top:3px;padding:0 7px}
 .chip .ck{position:absolute;right:8px;top:6px;font-style:normal;color:var(--subtle)}
