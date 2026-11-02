@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { isArchiveName, isSystemLabel } from '../../shared/labels';
 import type { CardOption, CardSpec, Dest } from '../../shared/types';
 import { reducedMotion } from '../components/flyTo';
+import { destColor } from '../destColor';
 import type { CardProps } from './registry';
 import { describeDate } from './date';
 
@@ -108,19 +109,37 @@ export function ChoiceError({ error }: { error?: string }) {
   return error ? <p className="err card-err" role="alert">Couldn't save that: {error}</p> : null;
 }
 
+const SEGMENTS = 10;
+
+/** A 10-segment meter: round(p * 10) segments filled in the destination's color. */
+export function Meter({ p, solid }: { p: number; solid: string }) {
+  const pct = Math.round(p * 100);
+  const filled = Math.round(p * SEGMENTS);
+  return (
+    <span className="meter" role="img" aria-label={`${pct}%`}>
+      {Array.from({ length: SEGMENTS }, (_, k) => (
+        <i key={k} className={k < filled ? 'on' : undefined} style={k < filled ? { background: solid } : undefined} />
+      ))}
+    </span>
+  );
+}
+
 export function Options({ options, win, onPick }: { options: CardOption[]; win: WinKey | null; onPick: (i: number) => void }) {
   return (
     <div className={`opts${win ? ' locked' : ''}`}>
-      {options.map((o, i) => (
-        <button key={o.dest} type="button" className={`opt${i === 0 ? ' top' : ''}${win === `opt:${i}` ? ' win' : ''}`}
-          style={{ ['--i' as string]: i }} onClick={() => onPick(i)} tabIndex={win && win !== `opt:${i}` ? -1 : undefined}>
-          <b><kbd aria-hidden="true">{i + 1}</kbd>{o.label}</b>
-          <span className="pct">
-            <span className="m" aria-hidden="true"><u style={{ width: `${Math.round(o.p * 100)}%` }} /></span>
-            {Math.round(o.p * 100)}%
-          </span>
-        </button>
-      ))}
+      {options.map((o, i) => {
+        const c = destColor(o.dest);
+        return (
+          <button key={o.dest} type="button" className={`opt${i === 0 ? ' top' : ''}${win === `opt:${i}` ? ' win' : ''}`}
+            style={{ ['--i' as string]: i }} onClick={() => onPick(i)} tabIndex={win && win !== `opt:${i}` ? -1 : undefined}>
+            <b><kbd aria-hidden="true">{i + 1}</kbd><span className="pill" style={{ background: c.bg, color: c.fg }}>{o.label}</span></b>
+            <span className="pct">
+              <Meter p={o.p} solid={c.solid} />
+              <span aria-hidden="true">{Math.round(o.p * 100)}%</span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

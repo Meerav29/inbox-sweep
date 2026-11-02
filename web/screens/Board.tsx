@@ -3,8 +3,9 @@ import { folderDest } from '../../shared/labels';
 import type { BatchView, Decision, Dest } from '../../shared/types';
 import { ApiError, api } from '../api';
 import { FolderCombo } from '../cards/parts';
-import { boardColumns } from '../components/LiveBoard';
+import { boardColumns, colVars } from '../components/LiveBoard';
 import { destLabel } from '../components/destLabel';
+import { StatusPill } from '../components/Pill';
 import { useBatch } from '../useBatch';
 import { NOTHING_LEFT, folderChoices } from './Session';
 
@@ -225,7 +226,7 @@ export function Board({ batchId, readOnly, onHome, onSession }: Props) {
         {done && <i className="ck" aria-hidden="true">✓</i>}
         <b>{d.subject}</b>
         <span>{d.fromName}{d.who === 'you' ? ' · you chose' : ''}{done ? <span className="sr-only"> · done</span> : null}</span>
-        {dry && <span className="tag">dry run</span>}
+        {dry && <StatusPill status="dry" />}
         {(d.status === 'skipped' || d.status === 'failed') && d.note && (
           <span className="note">{d.status === 'failed' ? 'Failed: ' : 'Skipped: '}{readableNote(d.note)}</span>
         )}
@@ -293,7 +294,7 @@ export function Board({ batchId, readOnly, onHome, onSession }: Props) {
       )}
       <div className="board review" aria-label="Where everything's going">
         {columns.map((c) => (
-          <div key={c.dest} className={`col${over === c.dest ? ' over' : ''}`} data-testid="board-col" data-dest={c.dest}
+          <div key={c.dest} className={`col${over === c.dest ? ' over' : ''}`} data-testid="board-col" data-dest={c.dest} style={colVars(c.dest)}
             onDragOver={canMove ? (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (over !== c.dest) setOver(c.dest); } : undefined}
             onDragLeave={canMove ? () => setOver((o) => (o === c.dest ? null : o)) : undefined}
             onDrop={canMove ? (e) => {
