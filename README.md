@@ -71,7 +71,7 @@ While the consent screen is in Testing mode, Google expires refresh tokens after
 
 Other optional settings in `.env`: `WEB_ORIGIN` (where the web app is served, default `http://localhost:5173`), `JEV_SWEEP_PORT` (default 8787), and `JEV_SWEEP_DATA_DIR` (default `data`).
 
-Under `npm run dev` the API port is effectively fixed at 8787, because the Vite proxy in `vite.config.ts` targets it. Changing `JEV_SWEEP_PORT` also means editing `vite.config.ts` and the Google redirect URI.
+Under `npm run dev`, set `JEV_SWEEP_WEB_PORT` (default 5173) to move the web app and `JEV_SWEEP_PORT` (default 8787) to move the API; the Vite proxy follows `JEV_SWEEP_PORT`. A different API port also means updating the Google redirect URI.
 
 ## First real run
 
