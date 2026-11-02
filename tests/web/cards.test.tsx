@@ -12,7 +12,7 @@ afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); document
 
 const filing = (o: Partial<CardSpec> = {}): CardSpec => ({
   kind: 'filing', threadId: 't1', n: 3, fromName: 'Chase', fromAddress: 'no-reply@alertsp.chase.com',
-  subject: 'Your September statement is ready', body: 'Your new balance is $1,284.19.',
+  subject: 'Your September statement is ready', date: '2026-10-28T09:00:00Z', body: 'Your new balance is $1,284.19.',
   why: 'Looks routine, but it has a due date.',
   options: [
     { dest: 'label:Finance/Statements', label: 'Finance/Statements', p: 0.71 },
@@ -243,4 +243,69 @@ test('flyTo moves a chip and removes it when it lands', async () => {
   await p;
   expect(done).toBe(true);
   expect(document.querySelector('.flyer')).toBeNull();
+});
+
+test('Archive button shows when options lack archive, and is absent when an option is archive', () => {
+  const noArchive = filing({ options: [{ dest: 'label:Home', label: 'Home', p: 0.8 }, { dest: 'keep', label: 'Keep in inbox', p: 0.2 }] });
+  const onChoose = vi.fn();
+  const { unmount } = render(<FilingCard card={noArchive} folders={FOLDERS} onChoose={onChoose} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
+  expect(onChoose).toHaveBeenCalledWith('archive', undefined);
+  unmount();
+  render(<FilingCard card={filing()} folders={FOLDERS} onChoose={() => {}} />);
+  expect(screen.queryByRole('button', { name: 'Archive' })).toBeNull();
+});
+
+test('the folder list opens with Archive first, and picking it chooses archive', () => {
+  const onChoose = vi.fn();
+  render(<FilingCard card={filing()} folders={FOLDERS} onChoose={onChoose} />);
+  const box = screen.getByRole('combobox', { name: 'Other folder' });
+  fireEvent.focus(box);
+  expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Archive', ...FOLDERS]);
+  fireEvent.keyDown(box, { key: 'ArrowDown' });
+  fireEvent.keyDown(box, { key: 'ArrowUp' });
+  fireEvent.keyDown(box, { key: 'Enter' });
+  expect(onChoose).toHaveBeenCalledWith('archive', undefined);
+});
+
+test('typing "arch" lists Archive once; ArrowDown moves to the next item', () => {
+  render(<FilingCard card={filing()} folders={[...FOLDERS, 'Archive/Old']} onChoose={() => {}} />);
+  const box = screen.getByRole('combobox', { name: 'Other folder' });
+  fireEvent.change(box, { target: { value: 'arch' } });
+  expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Archive', 'Archive/Old', 'Create “arch”']);
+  fireEvent.keyDown(box, { key: 'ArrowDown' });
+  expect(screen.getByRole('option', { name: 'Archive/Old' }).getAttribute('aria-selected')).toBe('true');
+});
+
+test('Enter on an exact folder still files there, not in Archive', () => {
+  const onChoose = vi.fn();
+  render(<FilingCard card={filing()} folders={FOLDERS} onChoose={onChoose} />);
+  const box = screen.getByRole('combobox', { name: 'Other folder' });
+  fireEvent.change(box, { target: { value: 'Travel' } });
+  fireEvent.keyDown(box, { key: 'Enter' });
+  expect(onChoose).toHaveBeenCalledWith('label:Travel', undefined);
+});
+
+test('the sender line shows when the email arrived', () => {
+  render(<FilingCard card={filing({ date: '2023-03-04T12:00:00Z' })} folders={FOLDERS} onChoose={() => {}} />);
+  const t = document.querySelector('time')!;
+  expect(t.getAttribute('datetime')).toBe('2023-03-04T12:00:00Z');
+  expect(t.textContent).toMatch(/^Mar 4, 2023 · \d+ years? ago$/);
+  cleanup();
+  render(<FilingCard card={filing({ date: 'nope' })} folders={FOLDERS} onChoose={() => {}} />);
+  expect(document.querySelector('time')).toBeNull();
+});
+
+test('Enter on an empty folder box picks nothing, but arrowing to Archive then Enter archives', () => {
+  const onChoose = vi.fn();
+  render(<FilingCard card={filing()} folders={FOLDERS} onChoose={onChoose} />);
+  const box = screen.getByRole('combobox', { name: 'Other folder' });
+  fireEvent.focus(box);
+  fireEvent.keyDown(box, { key: 'Enter' });
+  act(() => { vi.advanceTimersByTime(LOCK_IN); });
+  expect(onChoose).not.toHaveBeenCalled();
+  fireEvent.keyDown(box, { key: 'ArrowDown' });
+  fireEvent.keyDown(box, { key: 'ArrowUp' });
+  fireEvent.keyDown(box, { key: 'Enter' });
+  expect(onChoose).toHaveBeenCalledWith('archive', undefined);
 });

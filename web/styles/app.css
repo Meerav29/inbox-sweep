@@ -84,7 +84,7 @@ a{color:var(--strong)}
 .trow.you .to{color:var(--strong);font-weight:500}
 .trow.red{box-shadow:inset 2px 0 0 var(--red)}
 .stagewrap{display:flex;flex-direction:column;min-width:0}
-.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:24px var(--gutter);min-height:340px}
+.stage{position:relative;z-index:1;flex:1;display:flex;align-items:center;justify-content:center;padding:24px var(--gutter);min-height:340px}
 .idle{color:var(--subtle);font-size:12px;display:flex;gap:8px;align-items:center;text-align:center}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--strong);flex:none}
 

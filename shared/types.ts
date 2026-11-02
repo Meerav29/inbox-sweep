@@ -11,7 +11,7 @@ export type Outcome = { kind: 'auto_archive' } | { kind: 'proposed'; dest: Dest 
   | { kind: 'queue'; card: 'filing' | 'important'; suggestKeep: boolean };
 export interface CardOption { dest: Dest; label: string; p: number }
 export interface CardSpec { kind: 'filing' | 'important'; threadId: string; n: number; fromName: string; fromAddress: string;
-  subject: string; body: string; why?: string; summary?: string[]; options: CardOption[]; suggestKeep: boolean; gmailUrl: string }
+  subject: string; /** ISO time the email arrived. */ date: string; body: string; why?: string; summary?: string[]; options: CardOption[]; suggestKeep: boolean; gmailUrl: string }
 export type DecisionStatus = 'auto_applied' | 'proposed' | 'applied' | 'skipped' | 'failed';
 export interface Decision { threadId: string; n: number; subject: string; fromName: string; dest: Dest; who: 'jev' | 'you';
   important: boolean; star: boolean; opened: boolean; status: DecisionStatus; note?: string }

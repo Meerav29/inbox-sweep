@@ -3,7 +3,7 @@ import { reduceBatch } from '../../web/useBatch';
 import type { BatchView, CardSpec, Decision } from '../../shared/types';
 
 const card = (threadId: string): CardSpec => ({
-  kind: 'filing', threadId, n: 1, fromName: 'A', fromAddress: 'a@x.com', subject: 's', body: 'b',
+  kind: 'filing', threadId, n: 1, fromName: 'A', fromAddress: 'a@x.com', subject: 's', date: '2026-10-28T09:00:00Z', body: 'b',
   options: [], suggestKeep: false, gmailUrl: 'u',
 });
 const dec = (threadId: string, dest: Decision['dest'], extra: Partial<Decision> = {}): Decision => ({

@@ -11,6 +11,7 @@ export function FilingCard({ card, folders, onChoose, context }: CardProps) {
   };
   useOptionKeys(true, pickOption);
   const noOptions = card.options.length === 0;
+  const archiveListed = card.options.some((o) => o.dest === 'archive');
 
   return (
     <article className="card" aria-label={`Email: ${card.subject}`}>
@@ -23,7 +24,7 @@ export function FilingCard({ card, folders, onChoose, context }: CardProps) {
       <ChoiceError error={error} />
       <div className="row card-row">
         <FolderCombo folders={folders} disabled={win !== null} onPick={(name) => choose(folderDest(name), undefined, 'other')} />
-        {noOptions && (
+        {!archiveListed && (
           <button type="button" className={`btn${win === 'archive' ? ' dark' : ''}`} onClick={() => choose('archive', undefined, 'archive')}>
             Archive
           </button>

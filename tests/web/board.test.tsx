@@ -224,7 +224,7 @@ test('the "+ Folder" picker moves a tapped chip into a new folder, and refuses G
   fireEvent.click(within(group).getByRole('button', { name: '+ Folder' }));
   const box = within(group).getByRole('combobox', { name: 'Other folder' });
   fireEvent.focus(box);
-  await waitFor(() => expect(within(group).getAllByRole('option').map((o) => o.textContent)).toEqual(['Travel', 'finance', 'Work']));
+  await waitFor(() => expect(within(group).getAllByRole('option').map((o) => o.textContent)).toEqual(['Archive', 'Travel', 'finance', 'Work']));
   fireEvent.change(box, { target: { value: 'inbox' } });
   expect(within(group).getByText('That name is reserved by Gmail')).toBeTruthy();
   fireEvent.keyDown(box, { key: 'Enter' });
@@ -533,4 +533,13 @@ test('incomplete setup wins over a hashed route', async () => {
   render(<App />);
   expect(await screen.findByRole('link', { name: 'Connect Gmail' })).toBeTruthy();
   expect(FakeES.last).toBeNull();
+});
+
+test('the add-column "+ Folder" picker does not list Archive', async () => {
+  mount();
+  FakeES.last!.emit({ type: 'snapshot', view: view() });
+  await settle();
+  fireEvent.click(screen.getByRole('button', { name: '+ Folder' }));
+  fireEvent.focus(screen.getByRole('combobox', { name: 'Other folder' }));
+  await waitFor(() => expect(screen.getAllByRole('option').map((o) => o.textContent)).not.toContain('Archive'));
 });
