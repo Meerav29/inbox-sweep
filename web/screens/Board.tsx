@@ -47,7 +47,7 @@ function errorText(e: unknown, what: 'apply' | 'other'): string {
 }
 
 /** "+ Folder": a button that opens the folder picker in its place. */
-function FolderPicker({ folders, disabled, onPick }: { folders: string[]; disabled?: boolean; onPick: (name: string) => void }) {
+function FolderPicker({ folders, disabled, onPick, includeArchive }: { folders: string[]; disabled?: boolean; onPick: (name: string) => void; includeArchive?: boolean }) {
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   useEffect(() => { if (open) wrap.current?.querySelector('input')?.focus(); }, [open]);
@@ -56,7 +56,7 @@ function FolderPicker({ folders, disabled, onPick }: { folders: string[]; disabl
   }
   return (
     <div className="fpick" ref={wrap}>
-      <FolderCombo folders={folders} disabled={!!disabled} onPick={(name) => { setOpen(false); onPick(name); }} />
+      <FolderCombo folders={folders} includeArchive={includeArchive} disabled={!!disabled} onPick={(name) => { setOpen(false); onPick(name); }} />
     </div>
   );
 }
@@ -287,7 +287,7 @@ export function Board({ batchId, readOnly, onHome, onSession }: Props) {
         ) : (
           <div className="moveto tools">
             <span className="hint">Tap a card to move it, or drag it.</span>
-            <FolderPicker folders={folders} onPick={addColumn} />
+            <FolderPicker folders={folders} includeArchive={false} onPick={addColumn} />
           </div>
         )
       )}

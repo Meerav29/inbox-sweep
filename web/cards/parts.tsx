@@ -129,11 +129,12 @@ export function Options({ options, win, onPick }: { options: CardOption[]; win: 
  * "Other folder…": pick any existing label, or type a new name to create it at apply time.
  * A name matching an existing label in any case means that label; Gmail's own names are refused.
  */
-export function FolderCombo({ folders, disabled, onPick }: { folders: string[]; disabled: boolean; onPick: (name: string) => void }) {
+export function FolderCombo({ folders, disabled, onPick, includeArchive = true }: { folders: string[]; disabled: boolean; onPick: (name: string) => void; includeArchive?: boolean }) {
   const id = useId();
   const [text, setText] = useState('');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const [keyed, setKeyed] = useState(false); // the highlight was moved with the arrow keys
 
   const typed = text.trim();
   const reserved = typed !== '' && isReservedLabel(typed);
@@ -142,11 +143,11 @@ export function FolderCombo({ folders, disabled, onPick }: { folders: string[]; 
     const q = typed.toLowerCase();
     const list: { key: string; label: string; name: string }[] = [];
     // Archive is always a choice, listed first while the typed text could still mean it.
-    if ('archive'.includes(q)) list.push({ key: 'archive', label: 'Archive', name: 'Archive' });
+    if (includeArchive && 'archive'.includes(q)) list.push({ key: 'archive', label: 'Archive', name: 'Archive' });
     for (const f of folders) if (f.toLowerCase().includes(q)) list.push({ key: `f:${f}`, label: f, name: f });
     if (typed && !exact && !reserved && !isArchiveName(typed)) list.push({ key: 'create', label: `Create “${typed}”`, name: typed });
     return list;
-  }, [folders, typed, exact, reserved]);
+  }, [folders, typed, exact, reserved, includeArchive]);
 
   const pick = (name: string) => {
     if (disabled || isReservedLabel(name)) return;
@@ -155,12 +156,13 @@ export function FolderCombo({ folders, disabled, onPick }: { folders: string[]; 
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, items.length - 1)); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setKeyed(true); setActive((a) => Math.min(a + 1, items.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setKeyed(true); setActive((a) => Math.max(a - 1, 0)); }
     else if (e.key === 'Escape') setOpen(false);
     else if (e.key === 'Enter') {
       e.preventDefault();
-      if (reserved) return;
+      // Nothing typed: Enter must not pick whatever is highlighted (that would be Archive).
+      if (reserved || (!typed && !(open && keyed))) return;
       // A typed name that already exists wins over whatever is highlighted.
       if (exact) pick(exact);
       else if (open && items[active]) pick(items[active].name);
@@ -177,8 +179,8 @@ export function FolderCombo({ folders, disabled, onPick }: { folders: string[]; 
         aria-expanded={showList} aria-controls={listId} aria-autocomplete="list"
         aria-activedescendant={showList && items[active] ? `${id}-o${active}` : undefined}
         value={text} readOnly={disabled}
-        onChange={(e) => { setText(e.target.value); setOpen(true); setActive(0); }}
-        onFocus={() => setOpen(true)} onBlur={() => setOpen(false)} onKeyDown={onKeyDown} />
+        onChange={(e) => { setText(e.target.value); setOpen(true); setActive(0); setKeyed(false); }}
+        onFocus={() => setOpen(true)} onBlur={() => { setOpen(false); setKeyed(false); }} onKeyDown={onKeyDown} />
       {showList && (
         <ul className="combo-list" id={listId} role="listbox" aria-label="Folders">
           {reserved && <li className="combo-note" role="presentation">That name is reserved by Gmail</li>}

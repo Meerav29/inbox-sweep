@@ -534,3 +534,12 @@ test('incomplete setup wins over a hashed route', async () => {
   expect(await screen.findByRole('link', { name: 'Connect Gmail' })).toBeTruthy();
   expect(FakeES.last).toBeNull();
 });
+
+test('the add-column "+ Folder" picker does not list Archive', async () => {
+  mount();
+  FakeES.last!.emit({ type: 'snapshot', view: view() });
+  await settle();
+  fireEvent.click(screen.getByRole('button', { name: '+ Folder' }));
+  fireEvent.focus(screen.getByRole('combobox', { name: 'Other folder' }));
+  await waitFor(() => expect(screen.getAllByRole('option').map((o) => o.textContent)).not.toContain('Archive'));
+});

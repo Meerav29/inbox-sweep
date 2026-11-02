@@ -262,6 +262,8 @@ test('the folder list opens with Archive first, and picking it chooses archive',
   const box = screen.getByRole('combobox', { name: 'Other folder' });
   fireEvent.focus(box);
   expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Archive', ...FOLDERS]);
+  fireEvent.keyDown(box, { key: 'ArrowDown' });
+  fireEvent.keyDown(box, { key: 'ArrowUp' });
   fireEvent.keyDown(box, { key: 'Enter' });
   expect(onChoose).toHaveBeenCalledWith('archive', undefined);
 });
@@ -292,4 +294,18 @@ test('the sender line shows when the email arrived', () => {
   cleanup();
   render(<FilingCard card={filing({ date: 'nope' })} folders={FOLDERS} onChoose={() => {}} />);
   expect(document.querySelector('time')).toBeNull();
+});
+
+test('Enter on an empty folder box picks nothing, but arrowing to Archive then Enter archives', () => {
+  const onChoose = vi.fn();
+  render(<FilingCard card={filing()} folders={FOLDERS} onChoose={onChoose} />);
+  const box = screen.getByRole('combobox', { name: 'Other folder' });
+  fireEvent.focus(box);
+  fireEvent.keyDown(box, { key: 'Enter' });
+  act(() => { vi.advanceTimersByTime(LOCK_IN); });
+  expect(onChoose).not.toHaveBeenCalled();
+  fireEvent.keyDown(box, { key: 'ArrowDown' });
+  fireEvent.keyDown(box, { key: 'ArrowUp' });
+  fireEvent.keyDown(box, { key: 'Enter' });
+  expect(onChoose).toHaveBeenCalledWith('archive', undefined);
 });
