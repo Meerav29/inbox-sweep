@@ -184,11 +184,30 @@ describe('Repo', () => {
     const s = list[1];
     expect(s.batches).toBe(3);
     expect(s.total).toBe(12);
-    expect(s.split).toEqual({ archived: 1, filed: 1, you: 2, important: 1 });
+    expect(s.split).toEqual({ archived: 1, filed: 1, kept: 1, you: 2, important: 1 });
     expect(s.unfinishedBatchId).toBe(live);
     expect(list[0].unfinishedBatchId).toBeUndefined();
     expect(s.lastBatchId).toBe(live);
     expect(list[0].lastBatchId).toBeUndefined();
+  });
+
+  it('stats counts real applied and auto-applied decisions, not dry run, proposed or discarded ones', () => {
+    expect(repo.stats()).toEqual({ archived: 0, filed: 0, kept: 0, askedYou: 0, decided: 0, important: 0, unfinished: 0 });
+    const a = repo.createBatch(sid, 8).id;
+    repo.saveDecision(a, dec('1', { dest: 'archive', status: 'auto_applied' }));
+    repo.saveDecision(a, dec('2', { dest: 'label:Travel', who: 'you', status: 'applied' }));
+    repo.saveDecision(a, dec('3', { dest: 'keep', who: 'you', important: true, status: 'applied' }));
+    repo.saveDecision(a, dec('4', { dest: 'archive', status: 'auto_applied', note: 'dry run' }));
+    repo.saveDecision(a, dec('5', { dest: 'archive', status: 'proposed' }));
+    repo.saveDecision(a, dec('6', { dest: 'archive', status: 'skipped', note: 'changed in Gmail' }));
+    repo.setBatchStatus(a, 'applied');
+    const gone = repo.createBatch(sid, 1).id;
+    repo.saveDecision(gone, dec('7', { dest: 'archive', status: 'auto_applied' }));
+    repo.setBatchStatus(gone, 'discarded');
+    repo.createBatch(sid, 2); // running
+    const open = repo.createBatch(sid, 2).id;
+    repo.setBatchStatus(open, 'reviewing');
+    expect(repo.stats()).toEqual({ archived: 1, filed: 1, kept: 1, askedYou: 2, decided: 3, important: 1, unfinished: 2 });
   });
 
   it('lastBatchId skips empty batches, unless every batch is empty', () => {

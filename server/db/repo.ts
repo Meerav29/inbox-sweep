@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DEFAULT_SETTINGS } from '../../shared/types';
-import type { BatchStatus, Decision, Email, JevAnswers, QueueItem, SessionSummary, Settings } from '../../shared/types';
+import type { BatchStatus, Decision, Email, JevAnswers, QueueItem, SessionSummary, Settings, Stats } from '../../shared/types';
 import type { CardText } from '../claude/cardText';
 
 export type StoredEmail = Omit<Email, 'body'>;
@@ -256,6 +256,7 @@ export class Repo {
     const splitStmt = this.db.prepare(`SELECT
         COALESCE(SUM(d.dest = 'archive'), 0) AS archived,
         COALESCE(SUM(d.dest LIKE 'label:%'), 0) AS filed,
+        COALESCE(SUM(d.dest = 'keep'), 0) AS kept,
         COALESCE(SUM(d.who = 'you'), 0) AS you,
         COALESCE(SUM(d.important = 1), 0) AS important
       FROM decisions d JOIN batches b ON b.id = d.batch_id
@@ -278,7 +279,7 @@ export class Repo {
       const open = openStmt.get(s.id) as { id: string } | undefined;
       const out: SessionSummary = {
         id: s.id, startedAt: s.started_at, batches: bt.c, total: bt.t,
-        split: { archived: sp.archived, filed: sp.filed, you: sp.you, important: sp.important },
+        split: { archived: sp.archived, filed: sp.filed, kept: sp.kept, you: sp.you, important: sp.important },
       };
       if (open) out.unfinishedBatchId = open.id;
       const last = lastStmt.get(s.id) as { id: string } | undefined;
@@ -288,6 +289,21 @@ export class Repo {
       else if (dry.d > 0) out.partlyDryRun = true;
       return out;
     });
+  }
+
+  /** All-time totals: what really happened (or was approved), never dry-run writes or discarded batches. */
+  stats(): Stats {
+    const r = this.db.prepare(`SELECT
+        COALESCE(SUM(d.dest = 'archive'), 0) AS archived,
+        COALESCE(SUM(d.dest LIKE 'label:%'), 0) AS filed,
+        COALESCE(SUM(d.dest = 'keep'), 0) AS kept,
+        COALESCE(SUM(d.who = 'you'), 0) AS askedYou,
+        COUNT(d.thread_id) AS decided,
+        COALESCE(SUM(d.important = 1), 0) AS important
+      FROM decisions d JOIN batches b ON b.id = d.batch_id
+      WHERE b.status != 'discarded' AND d.status IN ('applied', 'auto_applied') AND COALESCE(d.note, '') != 'dry run'`).get() as Omit<Stats, 'unfinished'>;
+    const u = this.db.prepare(`SELECT COUNT(*) AS c FROM batches WHERE status IN ('running', 'reviewing', 'applying')`).get() as { c: number };
+    return { ...r, unfinished: u.c };
   }
 
   getSettings(): Settings {

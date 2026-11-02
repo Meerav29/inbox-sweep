@@ -5,7 +5,7 @@ import { Setup } from '../../web/screens/Setup';
 import { Home } from '../../web/screens/Home';
 import { mergeFolders } from '../../web/screens/Folders';
 import { DEFAULT_SETTINGS } from '../../shared/types';
-import type { SessionSummary, SetupStatus } from '../../shared/types';
+import type { SessionSummary, SetupStatus, Stats } from '../../shared/types';
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
@@ -39,15 +39,17 @@ test('Setup shows a sign-in error line when asked', () => {
   expect(screen.getByRole('alert').textContent).toMatch(/sign-in/i);
 });
 
-function stubApi(sessions: SessionSummary[]) {
+const ZERO_STATS: Stats = { archived: 0, filed: 0, kept: 0, askedYou: 0, decided: 0, important: 0, unfinished: 0 };
+function stubApi(sessions: SessionSummary[], stats: Stats = ZERO_STATS) {
   vi.stubGlobal('fetch', vi.fn(async (url: string) => {
     const body = url === '/api/sessions' ? sessions : url === '/api/settings' ? DEFAULT_SETTINGS
+      : url === '/api/stats' ? stats
       : url.endsWith('/resume') ? { batchId: 'b9', status: 'running' } : {};
     return new Response(JSON.stringify(body), { status: 200 });
   }));
 }
 const summary = (o: Partial<SessionSummary> = {}): SessionSummary => ({
-  id: 's1', startedAt: '2026-10-30T10:00:00Z', batches: 1, total: 10, split: { archived: 5, filed: 3, you: 2, important: 1 }, ...o,
+  id: 's1', startedAt: '2026-10-30T10:00:00Z', batches: 1, total: 10, split: { archived: 5, filed: 3, kept: 2, you: 2, important: 1 }, ...o,
 });
 
 test('Home shows Resume when a session has an unfinished batch, and resumes that batch', async () => {
@@ -63,25 +65,27 @@ test('Home hides Resume when nothing is unfinished and opens a past session by i
   stubApi([summary({ lastBatchId: 'b3' })]);
   const onPast = vi.fn();
   render(<Home onSession={() => {}} onReview={() => {}} onPast={onPast} onFolders={() => {}} />);
-  const row = await screen.findByText('10 emails');
+  await screen.findByRole('table');
   expect(screen.queryByRole('button', { name: 'Resume unfinished batch' })).toBeNull();
-  row.click();
+  screen.getAllByRole('row')[1].click();
   await waitFor(() => expect(onPast).toHaveBeenCalledWith('b3'));
 });
 
 test('Home marks a dry-run past session', async () => {
   stubApi([summary({ id: 'd', lastBatchId: 'b1', dryRun: true }), summary({ id: 'r', lastBatchId: 'b2', total: 7 })]);
   render(<Home onSession={() => {}} onReview={() => {}} onPast={() => {}} onFolders={() => {}} />);
-  const dryRow = (await screen.findByText('10 emails')).closest('button')!;
+  await screen.findByRole('table');
+  const [, dryRow, realRow] = screen.getAllByRole('row');
   expect(within(dryRow).getByText('dry run')).toBeTruthy();
-  const realRow = screen.getByText('7 emails').closest('button')!;
   expect(within(realRow).queryByText('dry run')).toBeNull();
+  expect(within(realRow).getByText('applied')).toBeTruthy();
 });
 
 test('Home marks a partly dry-run past session', async () => {
   stubApi([summary({ id: 'p', lastBatchId: 'b1', partlyDryRun: true })]);
   render(<Home onSession={() => {}} onReview={() => {}} onPast={() => {}} onFolders={() => {}} />);
-  const row = (await screen.findByText('10 emails')).closest('button')!;
+  await screen.findByRole('table');
+  const row = screen.getAllByRole('row')[1];
   expect(within(row).getByText('partly dry run')).toBeTruthy();
   expect(within(row).queryByText('dry run')).toBeNull();
 });
@@ -106,4 +110,45 @@ test('mergeFolders defaults every label on at first visit, and keeps saved choic
   expect(mergeFolders(['A', 'B'], [])).toEqual([{ name: 'A', enabled: true }, { name: 'B', enabled: true }]);
   expect(mergeFolders(['A', 'B', 'C'], [{ name: 'A', enabled: true, description: 'x' }, { name: 'B', enabled: false }, { name: 'Gone', enabled: true }]))
     .toEqual([{ name: 'A', enabled: true, description: 'x' }, { name: 'B', enabled: false }, { name: 'C', enabled: false }]);
+});
+
+test('Home renders the stat tiles from /api/stats', async () => {
+  stubApi([], { archived: 120, filed: 45, kept: 12, askedYou: 25, decided: 200, important: 7, unfinished: 2 });
+  render(<Home onSession={() => {}} onReview={() => {}} onPast={() => {}} onFolders={() => {}} />);
+  const tiles = within(await screen.findByLabelText('All-time totals'));
+  await waitFor(() => expect(tiles.getByText('120')).toBeTruthy());
+  expect(tiles.getByText('Archived')).toBeTruthy();
+  expect(tiles.getByText('45')).toBeTruthy();
+  expect(tiles.getByText('13%')).toBeTruthy(); // 25 of 200, rounded
+  expect(tiles.getByText('25 of 200 emails')).toBeTruthy();
+  expect(tiles.getByText('7')).toBeTruthy();
+  expect(tiles.getByText('2')).toBeTruthy();
+});
+
+test('Home for a brand-new user shows zeros and an empty state, with Start as the only dark button', async () => {
+  stubApi([]);
+  render(<Home onSession={() => {}} onReview={() => {}} onPast={() => {}} onFolders={() => {}} />);
+  expect(await screen.findByText(/No sessions yet/)).toBeTruthy();
+  const tiles = within(screen.getByLabelText('All-time totals'));
+  await waitFor(() => expect(tiles.getByText('0%')).toBeTruthy());
+  expect(tiles.getByText('all caught up')).toBeTruthy();
+  expect(screen.queryByRole('table')).toBeNull();
+  expect(document.querySelectorAll('.btn.dark')).toHaveLength(1);
+  expect(screen.getByRole('button', { name: 'Start session' })).toBeTruthy();
+});
+
+test('Home past sessions are a real table with headers, status pills and a split bar', async () => {
+  stubApi([
+    summary({ id: 'a', lastBatchId: 'b1', total: 12, batches: 2 }),
+    summary({ id: 'u', lastBatchId: 'b2', unfinishedBatchId: 'b2', total: 5 }),
+  ]);
+  render(<Home onSession={() => {}} onReview={() => {}} onPast={() => {}} onFolders={() => {}} />);
+  const table = await screen.findByRole('table');
+  const heads = within(table).getAllByRole('columnheader').map((h) => h.textContent);
+  expect(heads).toEqual(['Status', 'Emails', 'Batches', 'Date', 'Sorted']);
+  const [, first, second] = within(table).getAllByRole('row');
+  expect(within(first).getByText('applied')).toBeTruthy();
+  expect(within(first).getByText('12')).toBeTruthy();
+  expect(within(first).getByRole('img', { name: '5 archived, 3 filed, 2 kept' })).toBeTruthy();
+  expect(within(second).getByText('unfinished')).toBeTruthy();
 });

@@ -823,6 +823,24 @@ describe('fix round 1', () => {
     expect((await call('/api/auth/google')).status).toBe(400); // GET still reaches the OAuth route
   });
 
+  test('GET /api/stats returns all-time totals and is empty for a new user', async () => {
+    fake();
+    const zero = await call('/api/stats');
+    expect(zero.status).toBe(200);
+    expect(await zero.json()).toEqual({ archived: 0, filed: 0, kept: 0, askedYou: 0, decided: 0, important: 0, unfinished: 0 });
+    const b = repo.createBatch(repo.createSession().id, 3).id;
+    const d = (threadId: string, o: object) => ({ threadId, n: 1, subject: 's', fromName: 'f', dest: 'archive' as const, who: 'jev' as const,
+      important: false, star: false, opened: false, status: 'auto_applied' as const, ...o });
+    repo.saveDecision(b, d('1', {}));
+    repo.saveDecision(b, d('2', { note: 'dry run' }));
+    repo.saveDecision(b, d('3', { dest: 'label:Travel', who: 'you', status: 'applied' }));
+    repo.setBatchStatus(b, 'applied');
+    const gone = repo.createBatch(repo.createSession().id, 1).id;
+    repo.saveDecision(gone, d('4', {}));
+    repo.setBatchStatus(gone, 'discarded');
+    expect(await (await call('/api/stats')).json()).toEqual({ archived: 1, filed: 1, kept: 0, askedYou: 1, decided: 2, important: 0, unfinished: 0 });
+  });
+
   test('sessions with no batch (a failed start) are not listed', async () => {
     class BrokenMail extends FakeMail {
       async listCandidates(): Promise<{ threadId: string; latestMessageId: string }[]> { throw new Error('gmail down'); }
