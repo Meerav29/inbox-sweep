@@ -3,6 +3,7 @@ import { isArchiveName, isSystemLabel } from '../../shared/labels';
 import type { CardOption, CardSpec, Dest } from '../../shared/types';
 import { reducedMotion } from '../components/flyTo';
 import type { CardProps } from './registry';
+import { describeDate } from './date';
 
 /** How long a picked option stays lit while the others fold away, before the choice is sent. */
 export const LOCK_IN_MS = 520;
@@ -86,11 +87,15 @@ export function CardHead({ card, title, context }: { card: CardSpec; title: stri
 }
 
 export function Sender({ card }: { card: CardSpec }) {
+  const when = describeDate(card.date, new Date());
   const initial = (card.fromName || card.fromAddress).trim().charAt(0).toUpperCase() || '?';
   return (
     <div className="from">
       <div className="av" aria-hidden="true">{initial}</div>
-      <div><b>{card.fromName || card.fromAddress}</b><span>{card.fromAddress}</span></div>
+      <div>
+        <b>{card.fromName || card.fromAddress}</b>
+        <span>{card.fromAddress}{when && <> · <time dateTime={card.date}>{when}</time></>}</span>
+      </div>
     </div>
   );
 }
@@ -135,11 +140,11 @@ export function FolderCombo({ folders, disabled, onPick }: { folders: string[]; 
   const exact = folders.find((f) => f.toLowerCase() === typed.toLowerCase());
   const items = useMemo(() => {
     const q = typed.toLowerCase();
-    const list: { key: string; label: string; name: string }[] = folders
-      .filter((f) => f.toLowerCase().includes(q))
-      .map((f) => ({ key: `f:${f}`, label: f, name: f }));
-    if (typed && isArchiveName(typed)) list.push({ key: 'archive', label: 'Archive', name: typed });
-    else if (typed && !exact && !reserved) list.push({ key: 'create', label: `Create “${typed}”`, name: typed });
+    const list: { key: string; label: string; name: string }[] = [];
+    // Archive is always a choice, listed first while the typed text could still mean it.
+    if ('archive'.includes(q)) list.push({ key: 'archive', label: 'Archive', name: 'Archive' });
+    for (const f of folders) if (f.toLowerCase().includes(q)) list.push({ key: `f:${f}`, label: f, name: f });
+    if (typed && !exact && !reserved && !isArchiveName(typed)) list.push({ key: 'create', label: `Create “${typed}”`, name: typed });
     return list;
   }, [folders, typed, exact, reserved]);
 

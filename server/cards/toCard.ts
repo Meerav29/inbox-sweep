@@ -15,7 +15,7 @@ export function toCard(email: Email, n: number, a: JevAnswers, outcome: Extract<
     .slice(0, 3);
   return {
     kind: outcome.card, threadId: email.threadId, n, fromName: email.fromName, fromAddress: email.fromAddress,
-    subject: email.subject, body: truncate(email.body, 600), why: text.why, summary: text.summary,
+    subject: email.subject, date: email.date, body: truncate(email.body, 600), why: text.why, summary: text.summary,
     options, suggestKeep: outcome.suggestKeep,
     gmailUrl: `https://mail.google.com/mail/u/0/#all/${email.threadId}`,
   };

@@ -16,3 +16,4 @@ test('important card carries the summary', () => expect(toCard(email, 1, ans({})
 test('jev failure gives no options', () => expect(toCard(email, 1, { ...ans({ destination: { probabilities: { archive: 1 } } }), failed: true }, { kind: 'queue', card: 'filing', suggestKeep: false }, {}).options).toEqual([]));
 test('body is truncated to 600', () => expect(toCard({ ...email, body: 'x'.repeat(900) }, 1, ans({}), { kind: 'queue', card: 'filing', suggestKeep: false }, {}).body).toHaveLength(600));
 test('truncate cuts at max', () => { expect(truncate('abcdef', 3)).toBe('ab…'); expect(truncate('ab', 3)).toBe('ab'); });
+test('card carries the email date', () => expect(toCard(email, 1, ans({}), { kind: 'queue', card: 'filing', suggestKeep: false }, {}).date).toBe(email.date));

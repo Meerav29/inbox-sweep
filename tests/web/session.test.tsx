@@ -36,7 +36,7 @@ const dec = (threadId: string, n: number, dest: Decision['dest'], o: Partial<Dec
   status: 'proposed', ...o,
 });
 const card: CardSpec = {
-  kind: 'filing', threadId: 'c', n: 4, fromName: 'Chase', fromAddress: 'c@x.com', subject: 'Statement', body: 'b',
+  kind: 'filing', threadId: 'c', n: 4, fromName: 'Chase', fromAddress: 'c@x.com', subject: 'Statement', date: '2026-10-28T09:00:00Z', body: 'b',
   options: [{ dest: 'label:Travel', label: 'Travel', p: 0.6 }], suggestKeep: false, gmailUrl: 'u',
 };
 const view = (o: Partial<BatchView> = {}): BatchView => ({
@@ -109,7 +109,7 @@ test('"Other folder" lists labels plus enabled settings folders, deduped without
   const box = screen.getByRole('combobox', { name: 'Other folder' });
   await waitFor(() => {
     fireEvent.focus(box);
-    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Travel', 'finance', 'Work']);
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Archive', 'Travel', 'finance', 'Work']);
   });
 });
 

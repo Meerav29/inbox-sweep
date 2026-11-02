@@ -224,7 +224,7 @@ test('the "+ Folder" picker moves a tapped chip into a new folder, and refuses G
   fireEvent.click(within(group).getByRole('button', { name: '+ Folder' }));
   const box = within(group).getByRole('combobox', { name: 'Other folder' });
   fireEvent.focus(box);
-  await waitFor(() => expect(within(group).getAllByRole('option').map((o) => o.textContent)).toEqual(['Travel', 'finance', 'Work']));
+  await waitFor(() => expect(within(group).getAllByRole('option').map((o) => o.textContent)).toEqual(['Archive', 'Travel', 'finance', 'Work']));
   fireEvent.change(box, { target: { value: 'inbox' } });
   expect(within(group).getByText('That name is reserved by Gmail')).toBeTruthy();
   fireEvent.keyDown(box, { key: 'Enter' });
