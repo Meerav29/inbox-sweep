@@ -15,7 +15,7 @@
   .dot { animation: pulse 1s infinite; }
   .btn { transition: background .15s var(--ease), color .15s var(--ease); }
   .seg button { transition: background .15s var(--ease), color .15s var(--ease); }
-  .prow { transition: background .15s var(--ease); }
+  .stable tbody tr.go { transition: background .15s var(--ease); }
 
   /* session */
   @keyframes arrive { from { opacity: 0; transform: translateY(18px) scale(.97); filter: blur(6px); } }

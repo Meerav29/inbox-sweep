@@ -1,7 +1,14 @@
 import { forwardRef } from 'react';
 import type { Decision, Dest } from '../../shared/types';
 import { Bump } from './Bump';
+import { destColor } from '../destColor';
 import { destLabel } from './destLabel';
+
+/** The column's tint, as CSS variables so hover and drag states can still override the background. */
+export function colVars(dest: Dest): React.CSSProperties {
+  const c = destColor(dest);
+  return { ['--col-bg' as string]: c.bg, ['--col-fg' as string]: c.fg };
+}
 
 /** Archived first, Inbox last, folders between in the order they first appeared. */
 export function boardColumns(decisions: Decision[], extra: Dest[] = []): { dest: Dest; items: Decision[] }[] {
@@ -37,7 +44,7 @@ export const LiveBoard = forwardRef<HTMLDivElement, Props>(function LiveBoard({ 
       </div>
       <div className="board" ref={ref}>
         {cols.map((c) => (
-          <div key={c.dest} className="col" data-testid="board-col" data-dest={c.dest}>
+          <div key={c.dest} className="col" data-testid="board-col" data-dest={c.dest} style={colVars(c.dest)}>
             <h4>{destLabel(c.dest)} <Bump value={c.items.length} tag="i" /></h4>
             {c.items.map((d) => (
               <div key={d.threadId} className={`chip tin${d.important ? ' red' : d.who === 'you' ? ' you' : ''}`}>

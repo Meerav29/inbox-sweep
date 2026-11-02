@@ -258,6 +258,8 @@ export function apiRoutes(deps: ApiDeps): Hono {
   // A session with no batch is what a failed start leaves behind; it has nothing to show.
   app.get('/api/sessions', route((c) => c.json(repo.listSessions().filter((s) => s.batches > 0))));
 
+  app.get('/api/stats', route((c) => c.json(repo.stats())));
+
   app.post('/api/sessions', route(async (c) => {
     await jsonBody(c);
     const rt = needRuntime();

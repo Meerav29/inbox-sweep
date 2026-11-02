@@ -23,7 +23,7 @@ type Reply = [number, unknown];
 let calls: { url: string; method: string; body?: unknown }[] = [];
 let overrides: Record<string, Reply> = {};
 const sessions: SessionSummary[] = [{
-  id: 's', startedAt: '2026-10-30T10:00:00Z', batches: 2, total: 10, split: { archived: 5, filed: 3, you: 2, important: 1 }, lastBatchId: 'b1',
+  id: 's', startedAt: '2026-10-30T10:00:00Z', batches: 2, total: 10, split: { archived: 5, filed: 3, kept: 2, you: 2, important: 1 }, lastBatchId: 'b1',
 }];
 const setupOk: SetupStatus = { typesafe: true, anthropic: true, google: true, gmailConnected: true, foldersChosen: true, fake: true };
 
@@ -502,7 +502,7 @@ test('a failed resume shows its error on Home', async () => {
 test('a malformed hash lands on Home', async () => {
   window.history.replaceState(null, '', '/#/session/%E0%A4%A');
   render(<App />);
-  expect(await screen.findByText('Inbox, a batch at a time')).toBeTruthy();
+  expect(await screen.findByRole('heading', { name: 'jev-sweep' })).toBeTruthy();
   await waitFor(() => expect(window.location.hash).toBe(''));
   await settle();
 });

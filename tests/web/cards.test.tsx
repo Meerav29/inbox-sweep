@@ -309,3 +309,15 @@ test('Enter on an empty folder box picks nothing, but arrowing to Archive then E
   fireEvent.keyDown(box, { key: 'Enter' });
   expect(onChoose).toHaveBeenCalledWith('archive', undefined);
 });
+
+test('Options show the folder as a tinted pill and a 10-segment meter with its percentage', () => {
+  render(<FilingCard card={filing()} folders={FOLDERS} onChoose={() => {}} />);
+  const pill = screen.getByText('Finance/Statements');
+  expect(pill.className).toContain('pill');
+  expect((pill as HTMLElement).style.color).not.toBe('');
+  const meter = screen.getByRole('img', { name: '71%' });
+  expect(meter.querySelectorAll('i')).toHaveLength(10);
+  expect(meter.querySelectorAll('i.on')).toHaveLength(7); // round(0.71 * 10)
+  expect(screen.getByRole('img', { name: '6%' }).querySelectorAll('i.on')).toHaveLength(1);
+  expect(screen.getByRole('img', { name: '19%' }).querySelectorAll('i.on')).toHaveLength(2);
+});

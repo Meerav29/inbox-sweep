@@ -1,4 +1,4 @@
-import type { BatchView, Dest, Settings, SessionSummary, SetupStatus } from '../shared/types';
+import type { BatchView, Dest, Settings, SessionSummary, SetupStatus, Stats } from '../shared/types';
 
 /** A non-2xx answer: the server's `error` message, plus the HTTP status for callers that branch on it. */
 export class ApiError extends Error {
@@ -38,6 +38,7 @@ export const api = {
   settings: () => request<Settings>('GET', '/api/settings'),
   saveSettings: (patch: Partial<Settings>) => request<Settings>('PUT', '/api/settings', patch),
   sessions: () => request<SessionSummary[]>('GET', '/api/sessions'),
+  stats: () => request<Stats>('GET', '/api/stats'),
   startSession: () => request<{ sessionId: string; batchId: string }>('POST', '/api/sessions', {}),
   nextBatch: (sessionId: string) =>
     request<{ batchId: string }>('POST', `/api/sessions/${encodeURIComponent(sessionId)}/batches`, {}),

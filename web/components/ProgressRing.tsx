@@ -1,6 +1,8 @@
+import { FILED_SOLID, archiveColor, keepColor } from '../destColor';
+
 const R = 13;
 const C = 2 * Math.PI * R;
-const COLORS = { archived: '#BDBDBD', filed: '#5D5D5D', kept: '#292929' };
+const COLORS = { archived: archiveColor.solid, filed: FILED_SOLID, kept: keepColor.solid };
 
 interface Props { archived: number; filed: number; kept: number; total: number }
 
