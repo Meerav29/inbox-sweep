@@ -17,7 +17,7 @@ test('Setup lists the missing items with their fixes and marks the rest done', (
   render(<Setup status={status({ typesafe: false, gmailConnected: false, foldersChosen: false })} onFolders={() => {}} onRecheck={() => {}} />);
   const ts = screen.getByTestId('setup-typesafe');
   expect(ts.className).toBe('todo');
-  expect(within(ts).getByRole('link', { name: 'How to add it' }).getAttribute('href')).toMatch(/#typesafe$/);
+  expect(within(ts).getByRole('link', { name: 'How to add it' }).getAttribute('href')).toMatch(/docs\/details\.md#typesafe$/);
   expect(screen.getByTestId('setup-anthropic').className).toBe('ok');
   expect(screen.getByRole('link', { name: 'Connect Gmail' }).getAttribute('href')).toBe('/api/auth/google');
   expect(screen.getByRole('button', { name: 'Choose folders' })).toHaveProperty('disabled', true);

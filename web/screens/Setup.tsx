@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import type { SetupStatus } from '../../shared/types';
 
-/** README steps that fix each item. The anchors live in the README's setup section. */
-const README = 'https://github.com/Meerav29/inbox-sweep#';
+/** Setup steps that fix each item. The anchors live in docs/details.md's setup section. */
+const SETUP_DOCS = 'https://github.com/Meerav29/inbox-sweep/blob/main/docs/details.md#';
 
 interface Props {
   status: SetupStatus;
@@ -15,16 +15,16 @@ export function Setup({ status, authError, onFolders, onRecheck }: Props) {
   const items: { key: string; ok: boolean; title: string; hint: string; fix: ReactNode }[] = [
     {
       key: 'typesafe', ok: status.typesafe, title: 'TypeSafe key found', hint: 'TYPESAFE_API_KEY in .env',
-      fix: <a href={`${README}typesafe`} target="_blank" rel="noreferrer">How to add it</a>,
+      fix: <a href={`${SETUP_DOCS}typesafe`} target="_blank" rel="noreferrer">How to add it</a>,
     },
     {
       key: 'anthropic', ok: status.anthropic, title: 'Anthropic key found (optional)',
       hint: 'ANTHROPIC_API_KEY in .env. Adds the "why" line and summaries on cards',
-      fix: <a href={`${README}anthropic`} target="_blank" rel="noreferrer">Optional: how to add it</a>,
+      fix: <a href={`${SETUP_DOCS}anthropic`} target="_blank" rel="noreferrer">Optional: how to add it</a>,
     },
     {
       key: 'google', ok: status.google, title: 'Google client found', hint: 'GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env',
-      fix: <a href={`${README}google`} target="_blank" rel="noreferrer">How to create one</a>,
+      fix: <a href={`${SETUP_DOCS}google`} target="_blank" rel="noreferrer">How to create one</a>,
     },
     {
       key: 'gmail', ok: status.gmailConnected, title: 'Gmail connected', hint: 'One-time sign-in; the token stays on this machine',
