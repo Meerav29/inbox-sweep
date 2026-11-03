@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const webPort = Number(process.env.JEV_SWEEP_WEB_PORT) || 5173;
-const apiPort = Number(process.env.JEV_SWEEP_PORT) || 8787;
+// INBOX_SWEEP_* wins; the legacy JEV_SWEEP_* names are still read when the new one is unset or empty.
+const sweepVar = (name: string) => process.env[`INBOX_SWEEP_${name}`] || process.env[`JEV_SWEEP_${name}`];
+const webPort = Number(sweepVar('WEB_PORT')) || 5173;
+const apiPort = Number(sweepVar('PORT')) || 8787;
 
 export default defineConfig({
   plugins: [react()],

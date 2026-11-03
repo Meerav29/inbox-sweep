@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { serve } from '@hono/node-server';
 import { loadConfig } from './config';
+import { dbFileName } from './db/path';
 import { createApp } from './app';
 import { Repo } from './db/repo';
 import { EventHub } from './events';
@@ -17,7 +18,7 @@ const tokenPath = join(config.dataDir, 'google-token.json');
 /** Fake mode answers each email after this long, so a batch plays out live instead of finishing instantly. */
 const FAKE_JEV_DELAY_MS = 250;
 
-const repo = new Repo(join(config.dataDir, config.fake ? 'fake.db' : 'jev-sweep.db'));
+const repo = new Repo(join(config.dataDir, dbFileName(config.dataDir, config.fake)));
 const services = config.fake
   ? fakeServices({
     repo, hub, concurrency: config.concurrency, cardTextTimeoutMs: config.cardTextTimeoutMs,
@@ -30,5 +31,5 @@ const app = createApp({ repo, hub, services, port: config.port, oauth: oauthRout
 
 // Loopback only: this process holds a Gmail token.
 serve({ fetch: app.fetch, port: config.port, hostname: '127.0.0.1' }, (info) => {
-  console.log(`jev-sweep server listening on http://localhost:${info.port}${config.fake ? ' (fake mode)' : ''}`);
+  console.log(`inbox-sweep server listening on http://localhost:${info.port}${config.fake ? ' (fake mode)' : ''}`);
 });
