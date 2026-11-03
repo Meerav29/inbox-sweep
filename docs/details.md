@@ -2,6 +2,10 @@
 
 Everything the [README](../README.md) leaves out: full setup, the settings you can tune, exactly how it decides, and what data goes where.
 
+## Fake mode
+
+`npm run dev:fake` uses a built-in inbox and simulated answers, so it needs no accounts and no `.env`. The web app is on http://localhost:5173, and the API runs on port 8787, listening on localhost only. Fake mode keeps its data in `data/fake.db`.
+
 ## Setup for your own inbox
 
 Copy `.env.example` to `.env` and fill in the keys below. `.env` and `data/` are git-ignored. Then run `npm run dev` (without `:fake`) and open http://localhost:5173. `.env` is read once when the server starts, so restart after editing it.

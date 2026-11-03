@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import type { SetupStatus } from '../../shared/types';
 
-/** README steps that fix each item. The anchors live in the README's setup section. */
-const README = 'https://github.com/Meerav29/inbox-sweep#';
+/** Setup steps that fix each item. The anchors live in docs/details.md's setup section. */
+const README = 'https://github.com/Meerav29/inbox-sweep/blob/main/docs/details.md#';
 
 interface Props {
   status: SetupStatus;
