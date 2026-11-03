@@ -1,5 +1,5 @@
 {
-  "name": "jev-sweep",
+  "name": "inbox-sweep",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "concurrently -n server,web \"tsx watch server/index.ts\" \"vite\"",
-    "dev:fake": "concurrently -n server,web \"cross-env JEV_SWEEP_FAKE=1 tsx watch server/index.ts\" \"vite\"",
+    "dev:fake": "concurrently -n server,web \"cross-env INBOX_SWEEP_FAKE=1 tsx watch server/index.ts\" \"vite\"",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

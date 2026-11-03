@@ -502,7 +502,7 @@ test('a failed resume shows its error on Home', async () => {
 test('a malformed hash lands on Home', async () => {
   window.history.replaceState(null, '', '/#/session/%E0%A4%A');
   render(<App />);
-  expect(await screen.findByRole('heading', { name: 'jev-sweep' })).toBeTruthy();
+  expect(await screen.findByRole('heading', { name: 'inbox-sweep' })).toBeTruthy();
   await waitFor(() => expect(window.location.hash).toBe(''));
   await settle();
 });

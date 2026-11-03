@@ -1,6 +1,6 @@
-# jev-sweep
+# inbox-sweep
 
-jev-sweep is a local app for going through your Gmail inbox a batch at a time. [Jev](https://typesafe.ai/), TypeSafe's decision model, scores each email. The ones it is very sure are junk get archived. For the rest it either proposes a folder or, when it is unsure or the email looks important, puts a small card in a review queue with the context and a question. You answer, and it keeps going. At the end of a batch you get a board of where everything is going, can drag cards to fix it, and then apply the moves.
+inbox-sweep is a local app for going through your Gmail inbox a batch at a time. [Jev](https://typesafe.ai/), TypeSafe's decision model, scores each email. The ones it is very sure are junk get archived. For the rest it either proposes a folder or, when it is unsure or the email looks important, puts a small card in a review queue with the context and a question. You answer, and it keeps going. At the end of a batch you get a board of where everything is going, can drag cards to fix it, and then apply the moves.
 
 It runs on your own machine against your own Gmail, TypeSafe and Anthropic accounts. Nothing is hosted.
 
@@ -13,8 +13,8 @@ It runs on your own machine against your own Gmail, TypeSafe and Anthropic accou
 Fake mode uses a built-in inbox and simulated answers, so it needs no accounts and no `.env`. It requires Node 22.12 or newer.
 
 ```sh
-git clone https://github.com/Meerav29/jev-sweep.git
-cd jev-sweep
+git clone https://github.com/Meerav29/inbox-sweep.git
+cd inbox-sweep
 npm install
 npm run dev:fake
 ```
@@ -49,7 +49,7 @@ ANTHROPIC_API_KEY=...
 
 ### Google
 
-jev-sweep reads and changes your mail through the Gmail API, so you need your own OAuth client.
+inbox-sweep reads and changes your mail through the Gmail API, so you need your own OAuth client.
 
 1. Open the [Google Cloud console](https://console.cloud.google.com/) and create a new project.
 2. Enable the **Gmail API** for it.
@@ -69,9 +69,9 @@ The app can archive, unarchive, add a label (creating it if needed), star and ma
 
 While the consent screen is in Testing mode, Google expires refresh tokens after 7 days. When Gmail stops working, press Connect Gmail on Setup again.
 
-Other optional settings in `.env`: `WEB_ORIGIN` (where the web app is served, default `http://localhost:5173`), `JEV_SWEEP_PORT` (default 8787), and `JEV_SWEEP_DATA_DIR` (default `data`).
+Other optional settings in `.env`: `WEB_ORIGIN` (where the web app is served, default `http://localhost:5173`), `INBOX_SWEEP_PORT` (default 8787), and `INBOX_SWEEP_DATA_DIR` (default `data`). The old `JEV_SWEEP_*` names still work.
 
-Under `npm run dev`, set `JEV_SWEEP_WEB_PORT` (default 5173) to move the web app and `JEV_SWEEP_PORT` (default 8787) to move the API; the Vite proxy follows `JEV_SWEEP_PORT`. A different API port also means updating the Google redirect URI.
+Under `npm run dev`, set `INBOX_SWEEP_WEB_PORT` (default 5173) to move the web app and `INBOX_SWEEP_PORT` (default 8787) to move the API; the Vite proxy follows `INBOX_SWEEP_PORT`. A different API port also means updating the Google redirect URI.
 
 ## First real run
 
@@ -147,7 +147,7 @@ Everything runs on your machine. The server listens on `127.0.0.1` only, and the
 
 Stored locally:
 
-- `data/jev-sweep.db` (SQLite; `data/fake.db` in fake mode). Per email: thread and message IDs, sender name and address, subject, date, Gmail labels and the unread flag. Also Jev's answers, the card text Claude wrote, your decisions, the review queue, your folder list and your settings. **Email bodies are not stored.** They are fetched, used in memory and dropped.
+- `data/inbox-sweep.db` (SQLite; `data/fake.db` in fake mode; an existing `data/jev-sweep.db` from before the rename is kept and still used). Per email: thread and message IDs, sender name and address, subject, date, Gmail labels and the unread flag. Also Jev's answers, the card text Claude wrote, your decisions, the review queue, your folder list and your settings. **Email bodies are not stored.** They are fetched, used in memory and dropped.
 - `data/google-token.json`, your Google OAuth tokens, written with mode 600 where the platform supports it.
 - `.env`, which you create.
 
@@ -157,7 +157,7 @@ Sent to Anthropic, only for emails that end up in the review queue (not the ones
 
 Sent to Google: the Gmail API calls needed to list, read and modify your threads.
 
-Check the data-handling terms of TypeSafe and Anthropic yourself before pointing this at a mailbox with sensitive mail. To remove everything jev-sweep keeps, delete the `data/` folder and revoke the app at https://myaccount.google.com/permissions.
+Check the data-handling terms of TypeSafe and Anthropic yourself before pointing this at a mailbox with sensitive mail. To remove everything inbox-sweep keeps, delete the `data/` folder and revoke the app at https://myaccount.google.com/permissions.
 
 ## License
 
