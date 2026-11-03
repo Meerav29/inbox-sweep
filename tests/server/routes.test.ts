@@ -319,7 +319,7 @@ describe('security', () => {
 describe('real mode', () => {
   function realSetup(env: Record<string, string>) {
     const dir = mkdtempSync(join(tmpdir(), 'jev-routes-'));
-    const config = loadConfig({ ...env, JEV_SWEEP_DATA_DIR: dir });
+    const config = loadConfig({ ...env, INBOX_SWEEP_DATA_DIR: dir });
     const tokenPath = join(dir, 'google-token.json');
     build(realServices({ repo, hub, config, tokenPath }));
     return { tokenPath };

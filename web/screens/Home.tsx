@@ -129,7 +129,7 @@ export function Home({ onSession, onReview, onPast, onFolders }: Props) {
   return (
     <main className="dash">
       <header className="dtop">
-        <h1>jev-sweep</h1>
+        <h1>inbox-sweep</h1>
         <div className="tools">
           <div className="seg" role="group" aria-label="Emails per batch">
             {SIZES.map((s) => (

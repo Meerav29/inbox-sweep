@@ -316,7 +316,7 @@ describe('Repo', () => {
 });
 
 it('adds the dry_run column to a database created before it existed', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'jev-sweep-repo-'));
+  const dir = mkdtempSync(join(tmpdir(), 'inbox-sweep-repo-'));
   const path = join(dir, 'old.db');
   try {
     const old = new Database(path);

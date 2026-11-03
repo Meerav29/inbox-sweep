@@ -74,7 +74,7 @@ export function App() {
   if (loadError) {
     return (
       <main className="screen">
-        <p className="err" role="alert">Can't reach the jev-sweep server: {loadError}</p>
+        <p className="err" role="alert">Can't reach the inbox-sweep server: {loadError}</p>
         <button className="btn" onClick={refresh}>Try again</button>
       </main>
     );
