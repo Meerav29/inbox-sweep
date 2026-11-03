@@ -26,7 +26,7 @@ test('the server port comes from INBOX_SWEEP_PORT, never the generic PORT', () =
   expect(loadConfig({ INBOX_SWEEP_PORT: '9001', PORT: '5173' }).port).toBe(9001);
 });
 
-test('a INBOX_SWEEP_PORT that is not a valid port falls back to 8787', () => {
+test('an INBOX_SWEEP_PORT that is not a valid port falls back to 8787', () => {
   for (const v of ['', 'abc', '80x', '1.5', '0', '-1', '65536']) {
     expect(loadConfig({ INBOX_SWEEP_PORT: v }).port).toBe(8787);
   }

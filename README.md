@@ -147,7 +147,7 @@ Everything runs on your machine. The server listens on `127.0.0.1` only, and the
 
 Stored locally:
 
-- `data/inbox-sweep.db` (SQLite; `data/fake.db` in fake mode; an existing `data/jev-sweep.db` from before the rename is kept and still used). Per email: thread and message IDs, sender name and address, subject, date, Gmail labels and the unread flag. Also Jev's answers, the card text Claude wrote, your decisions, the review queue, your folder list and your settings. **Email bodies are not stored.** They are fetched, used in memory and dropped.
+- `data/inbox-sweep.db` (SQLite; `data/fake.db` in fake mode; an existing `data/jev-sweep.db` from before the rename is kept and still used, unless `data/inbox-sweep.db` also exists, which then wins). Per email: thread and message IDs, sender name and address, subject, date, Gmail labels and the unread flag. Also Jev's answers, the card text Claude wrote, your decisions, the review queue, your folder list and your settings. **Email bodies are not stored.** They are fetched, used in memory and dropped.
 - `data/google-token.json`, your Google OAuth tokens, written with mode 600 where the platform supports it.
 - `.env`, which you create.
 
