@@ -80,7 +80,7 @@ Flags:
 - `--demo`: check as if you were using the fake inbox, so key checks are skipped.
 - `--init-env`: copy `.env.example` to `.env` first. It never overwrites an existing `.env`.
 
-Exit codes: `0` means everything passed. `1` means a required check failed. `2` means the required checks passed but an optional one has a problem, such as a bad Anthropic key. In `--json`, `ok` is true for both `0` and `2`.
+Exit codes: `0` means all required checks passed. `1` means a required check failed. `2` means the required checks passed but an optional one has a problem, such as a bad Anthropic key. In `--json`, `ok` is true for both `0` and `2`.
 
 Doctor never prints your keys, secrets or tokens. It opens the database read-only (SQLite may still touch its `-shm` index file, but no data changes) and refreshes the Gmail token in memory only, so nothing is written to `data/`.
 

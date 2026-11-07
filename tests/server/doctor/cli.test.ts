@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -26,6 +26,15 @@ describe('parseArgs', () => {
 });
 
 describe('main', () => {
+  it('returns exit 1 without a stack trace when .env cannot be loaded', async () => {
+    const d = tmp();
+    mkdirSync(join(d, '.env')); // a directory makes loadEnvFile throw
+    const r = await main([], d, fakeProbes());
+    expect(r.exitCode).toBe(1);
+    expect(r.output).toContain('doctor crashed:');
+    expect(r.output).toContain('check that .env is valid KEY=value lines');
+    expect(r.output).not.toMatch(/\n\s+at /);
+  });
   it('prints parseable JSON with exit 0', async () => {
     const d = tmp();
     const r = await withEnv(env, () => main(['--json'], d, fakeProbes()));

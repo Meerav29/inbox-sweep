@@ -97,7 +97,7 @@ export async function runChecks(ctx: DoctorContext): Promise<CheckResult[]> {
 
 export function summarize(results: CheckResult[]): { ok: boolean; exitCode: 0 | 1 | 2 } {
   if (results.some(r => r.required && r.status !== 'pass' && r.status !== 'info')) return { ok: false, exitCode: 1 };
-  // env_file only warns in fake mode, where it is not a problem worth an exit code.
+  // env_file is special-cased: in fake/demo mode its failure is downgraded to warn and must not cause exit 2.
   const degraded = results.some(r => !r.required && r.id !== 'env_file' && (r.status === 'fail' || r.status === 'warn'));
   return { ok: true, exitCode: degraded ? 2 : 0 };
 }

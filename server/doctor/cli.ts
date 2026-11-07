@@ -23,6 +23,12 @@ export function formatHuman(results: CheckResult[]): string {
   }).join('\n');
 }
 
+// Never include err.message or the stack: they could contain .env values.
+function crashMessage(err: unknown): string {
+  const name = err instanceof Error ? err.name : 'Error';
+  return `doctor crashed: ${name}\ncheck that .env is valid KEY=value lines`;
+}
+
 export async function main(argv: string[], cwd: string, probes: Probes = realProbes(cwd)): Promise<{ exitCode: number; output: string }> {
   const args = parseArgs(argv);
   const lines: string[] = [];
@@ -31,7 +37,10 @@ export async function main(argv: string[], cwd: string, probes: Probes = realPro
     lines.push(r === 'created' ? 'Created .env from .env.example.' : r === 'exists' ? '.env already exists; left unchanged.' : 'No .env.example found; nothing to copy.');
   }
   const envPath = join(cwd, '.env');
-  if (existsSync(envPath)) process.loadEnvFile(envPath);
+  if (existsSync(envPath)) {
+    try { process.loadEnvFile(envPath); }
+    catch (err) { return { exitCode: 1, output: crashMessage(err) }; }
+  }
 
   const config = loadConfig(process.env);
   const dataDir = resolve(cwd, config.dataDir);
@@ -48,5 +57,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   main(process.argv.slice(2), process.cwd()).then(({ exitCode, output }) => {
     console.log(output);
     process.exitCode = exitCode;
+  }).catch(err => {
+    console.error(crashMessage(err));
+    process.exitCode = 1;
   });
 }
