@@ -18,6 +18,8 @@ If step 2 says the id is taken, pick another suffix. If it says billing or an or
 
 ## Part A, option 2: console
 
+Already have a project? Skip step 1, select your project in the project picker (step 2), and still enable the Gmail API (step 3).
+
 1. Open https://console.cloud.google.com/projectcreate, name it `inbox-sweep`, press Create.
 2. Make sure the new project is selected in the top bar.
 3. Open https://console.cloud.google.com/apis/library/gmail.googleapis.com and press Enable.
