@@ -62,7 +62,7 @@ Skip any step whose check already passes, so the flow resumes where it stopped. 
 7. Start the app: ask them to run `npm run dev` in their own terminal, so they own it. If you start it in the background instead, stop only the process tree you started, by its PID, never by name or pattern. Kill the whole tree: killing just the npm wrapper leaves node/vite holding ports 5173 and 8787.
    - PowerShell: start it with `Start-Process npm.cmd -ArgumentList 'run','dev' -PassThru` (plain `npm` can fail in Windows PowerShell 5.1), which gives the PID. Stop it with `taskkill /PID <pid> /T /F`.
    - Git Bash only: `$!` is not the Windows PID. Read the `WINPID` column from `ps`, then run `MSYS_NO_PATHCONV=1 taskkill /PID <winpid> /T /F` (without that variable Git Bash rewrites `/PID`).
-   - macOS/Linux: start it with `npm run dev &` and note the PID (`$!`). Stop it with `pkill -P <pid>; kill <pid>` (children first, then the npm process).
+   - macOS/Linux: start it with `set -m; npm run dev & echo $!` (job control gives it its own process group, whose id equals that PID; works in bash and zsh). Stop it with `kill -- -<pid>` (the whole group, since npm spawns grandchildren that `pkill -P` would miss). Then confirm the ports are free: `lsof -i :8787 -i :5173` prints nothing.
    `.env` is read once at start, so restart after every `.env` edit.
 8. Connect Gmail: open http://localhost:5173, press Connect Gmail. On "Google hasn't verified this app", press Advanced, then Continue (expected, it is their own app). Check: `gmail`.
 9. Folders: they pick at least one on the Folders screen in the app. Check: `folders`. Tuning folders and rules is `/refine`'s job.
