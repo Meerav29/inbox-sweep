@@ -8,15 +8,15 @@ import type { Config } from '../config';
 export const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.modify';
 const MAX_PENDING_STATES = 20;
 
-const redirectUri = (config: Config): string => `http://localhost:${config.port}/api/auth/google/callback`;
+export const redirectUri = (config: Config): string => `http://localhost:${config.port}/api/auth/google/callback`;
 
-function makeClient(config: Config): OAuth2Client | null {
+export function makeClient(config: Config): OAuth2Client | null {
   const { googleId, googleSecret } = config.keys;
   if (!googleId || !googleSecret) return null;
   return new OAuth2Client(googleId, googleSecret, redirectUri(config));
 }
 
-function readTokens(tokenPath: string): Credentials | null {
+export function readTokens(tokenPath: string): Credentials | null {
   if (!existsSync(tokenPath)) return null;
   try {
     return JSON.parse(readFileSync(tokenPath, 'utf8')) as Credentials;
