@@ -8,7 +8,7 @@ Everything the [README](../README.md) leaves out: full setup, the settings you c
 
 ## Setup for your own inbox
 
-Copy `.env.example` to `.env` and fill in the keys below. `.env` and `data/` are git-ignored. Then run `npm run dev` (without `:fake`) and open http://localhost:5173. `.env` is read once when the server starts, so restart after editing it.
+Copy `.env.example` to `.env` (or run `npm run doctor -- --init-env`) and fill in the keys below. `.env` and `data/` are git-ignored. Run `npm run doctor` to check the setup (see [Checking your setup](#checking-your-setup)), then run `npm run dev` (without `:fake`) and open http://localhost:5173. `.env` is read once when the server starts, so restart after editing it.
 
 The Setup screen is a five-item checklist: TypeSafe key, Anthropic key (optional), Google client, Gmail connected, and Folders chosen. The app stays on Setup until the four required items are done; the Anthropic key never blocks it. Choose folders (the Gmail labels Jev may file into) only works after Gmail is connected, so it is the last step.
 
@@ -57,6 +57,49 @@ While the consent screen is in Testing mode, Google expires refresh tokens after
 Other optional settings in `.env`: `WEB_ORIGIN` (where the web app is served, default `http://localhost:5173`), `INBOX_SWEEP_PORT` (default 8787), and `INBOX_SWEEP_DATA_DIR` (default `data`). The old `JEV_SWEEP_*` names still work.
 
 Under `npm run dev`, set `INBOX_SWEEP_WEB_PORT` (default 5173) to move the web app and `INBOX_SWEEP_PORT` (default 8787) to move the API; the Vite proxy follows `INBOX_SWEEP_PORT`. A different API port also means updating the Google redirect URI.
+
+## Checking your setup
+
+`npm run doctor` checks your setup and says what to fix. It does not need the dev server. The checks run in this order:
+
+- `node`: Node 22.12.0 or newer.
+- `deps`: `npm install` has been run.
+- `env_file`: `.env` exists and is git-ignored.
+- `typesafe`: the TypeSafe key works (one small real call).
+- `anthropic`: the Anthropic key works. Optional, so a problem here is a warning.
+- `google_client`: the client ID and secret are set and the ID looks right.
+- `redirect_uri`: prints the exact redirect URI to register with Google. Information only.
+- `gmail`: the saved Gmail connection works. Prints the connected address.
+- `folders`: at least one folder is chosen.
+
+Each line shows `PASS`, `FAIL`, `WARN`, `SKIP` or `INFO`. A check is skipped when something it depends on failed first, or when it isn't needed for the fake inbox.
+
+Flags:
+
+- `--json`: print the results as JSON (`checks` and `ok`) instead of text.
+- `--demo`: check as if you were using the fake inbox, so key checks are skipped.
+- `--init-env`: copy `.env.example` to `.env` first. It never overwrites an existing `.env`.
+
+Exit codes: `0` means everything passed. `1` means a required check failed. `2` means the required checks passed but an optional one has a problem, such as a bad Anthropic key. In `--json`, `ok` is true for both `0` and `2`.
+
+Doctor never prints your keys, secrets or tokens. It opens the database read-only (SQLite may still touch its `-shm` index file, but no data changes) and refreshes the Gmail token in memory only, so nothing is written to `data/`.
+
+When a call fails, the JSON result includes an `errorCode` (`network`, `typesafe_bad_key`, `anthropic_bad_key`, `anthropic_bad_model`, `gmail_token_expired`, `google_invalid_client`, `gmail_api_disabled` or `unknown`) along with the hint. Common errors:
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| "Access blocked", or the consent page hangs | Your account is not a test user | Add it under Audience, then Test users |
+| `redirect_uri_mismatch` | The URI is not registered, the port is wrong, or the client is not a Web application | Register the exact URI doctor prints, on a Web application client |
+| `google_invalid_client` | Typo or stray space in the client ID or secret | Re-copy them into `.env`, then restart the app |
+| `gmail_api_disabled` | The Gmail API is not enabled, or was enabled a moment ago | Enable it, wait about a minute, then retry |
+| `gmail_token_expired` | The token expired (7 days in Testing mode) or was revoked | Press Connect Gmail again |
+| "setup incomplete" from the app | Gmail is not connected, the TypeSafe key is missing, or no folders are chosen | Run `npm run doctor` |
+| `typesafe_bad_key` | The key is wrong or revoked | Get a new key from typesafe.ai |
+| `anthropic_bad_key` or `anthropic_bad_model` | Bad key, or `CLAUDE_MODEL` is not a model Anthropic knows | Fix it in `.env`, or remove the key (it is optional) |
+| `network` | Could not reach the service | Check your connection, proxy or VPN, then run doctor again |
+| Port already in use | Another process is on 8787 or 5173 | Free the port, or see the port settings above |
+
+Doctor cannot see "Access blocked", `redirect_uri_mismatch` or port clashes. Those happen in Google's screens or when the server starts, so they only show up there.
 
 ## First real run
 
