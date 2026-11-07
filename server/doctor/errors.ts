@@ -22,7 +22,7 @@ export function classify(check: Check, err: unknown): { errorCode: ErrorCode; hi
   const response = obj(e.response);
   const status = e.status ?? response.status;
   const grant = obj(response.data).error;
-  const code = e.code ?? obj(e.cause).code;
+  const code = e.code ?? obj(e.cause).code ?? obj(obj(e.cause).cause).code;
   const message = typeof e.message === 'string' ? e.message : '';
   const pick = (errorCode: ErrorCode) => ({ errorCode, hint: HINTS[errorCode] });
 

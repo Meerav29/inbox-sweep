@@ -38,14 +38,21 @@ describe('runChecks', () => {
     expect(get('typesafe').status).toBe('fail');
     expect(get('typesafe').hint).toContain('TYPESAFE_API_KEY');
     expect(typesafe).not.toHaveBeenCalled();
-    expect(sum.exitCode).toBe(1);
+    expect(sum).toEqual({ ok: false, exitCode: 1 });
   });
 
   it('anthropic missing is only a warning', async () => {
     const { get, sum } = await run({}, { ...KEYS, ANTHROPIC_API_KEY: undefined });
     expect(get('anthropic').status).toBe('warn');
     expect(get('anthropic').required).toBe(false);
-    expect(sum.exitCode).toBe(2);
+    expect(sum).toEqual({ ok: true, exitCode: 2 });
+  });
+
+  it('optional probe failure goes through classify', async () => {
+    const anthropic = async () => { throw { message: 'fetch failed', cause: { cause: { code: 'ENOTFOUND' } } }; };
+    const r = (await run({ anthropic })).get('anthropic');
+    expect(r.status).toBe('warn');
+    expect(r.errorCode).toBe('network');
   });
 
   it('google id must look right', async () => {

@@ -99,5 +99,5 @@ export function summarize(results: CheckResult[]): { ok: boolean; exitCode: 0 | 
   if (results.some(r => r.required && r.status !== 'pass' && r.status !== 'info')) return { ok: false, exitCode: 1 };
   // env_file only warns in fake mode, where it is not a problem worth an exit code.
   const degraded = results.some(r => !r.required && r.id !== 'env_file' && (r.status === 'fail' || r.status === 'warn'));
-  return { ok: !degraded, exitCode: degraded ? 2 : 0 };
+  return { ok: true, exitCode: degraded ? 2 : 0 };
 }

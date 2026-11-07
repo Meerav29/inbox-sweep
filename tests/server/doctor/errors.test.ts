@@ -6,6 +6,9 @@ describe('classify', () => {
     expect(classify('typesafe', { code: 'ENOTFOUND' }).errorCode).toBe('network');
     expect(classify('gmail', { cause: { code: 'ECONNREFUSED' } }).errorCode).toBe('network');
   });
+  it('walks a nested cause chain', () => {
+    expect(classify('anthropic', { message: 'fetch failed', cause: { cause: { code: 'ENOTFOUND' } } }).errorCode).toBe('network');
+  });
   it('401 depends on the check', () => {
     expect(classify('typesafe', { status: 401 }).errorCode).toBe('typesafe_bad_key');
     expect(classify('anthropic', { status: 401 }).errorCode).toBe('anthropic_bad_key');
