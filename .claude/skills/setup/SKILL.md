@@ -60,9 +60,9 @@ Skip any step whose check already passes, so the flow resumes where it stopped. 
 5. Consent screen: External, Testing, app name, support email. They must add their own address as a test user. Say plainly that skipping this gives "Access blocked" or a page that hangs, with no clear error.
 6. OAuth client: type **Web application** (not Desktop). Authorised redirect URI is the exact `redirect_uri` value from doctor. They paste the client ID and secret into `.env`. Check: `google_client`.
 7. Start the app: ask them to run `npm run dev` in their own terminal, so they own it. If you start it in the background instead, stop only the process tree you started, by its PID, never by name or pattern. Kill the whole tree: killing just the npm wrapper leaves node/vite holding ports 5173 and 8787.
-   - PowerShell or cmd: `Start-Process -PassThru` gives the PID. Run `taskkill /PID <pid> /T /F`.
+   - PowerShell: start it with `Start-Process npm.cmd -ArgumentList 'run','dev' -PassThru` (plain `npm` can fail in Windows PowerShell 5.1), which gives the PID. Stop it with `taskkill /PID <pid> /T /F`.
    - Git Bash only: `$!` is not the Windows PID. Read the `WINPID` column from `ps`, then run `MSYS_NO_PATHCONV=1 taskkill /PID <winpid> /T /F` (without that variable Git Bash rewrites `/PID`).
-   - macOS/Linux: start it in its own process group (`setsid npm run dev &`), then `kill -- -<pgid>` (the pgid equals the PID `setsid` reports). Or kill the PID's children first.
+   - macOS/Linux: start it with `npm run dev &` and note the PID (`$!`). Stop it with `pkill -P <pid>; kill <pid>` (children first, then the npm process).
    `.env` is read once at start, so restart after every `.env` edit.
 8. Connect Gmail: open http://localhost:5173, press Connect Gmail. On "Google hasn't verified this app", press Advanced, then Continue (expected, it is their own app). Check: `gmail`.
 9. Folders: they pick at least one on the Folders screen in the app. Check: `folders`. Tuning folders and rules is `/refine`'s job.
