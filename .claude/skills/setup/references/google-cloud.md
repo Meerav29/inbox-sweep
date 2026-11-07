@@ -6,11 +6,11 @@ Work account (Google Workspace)? Your admin may block unverified apps or limit w
 
 ## Part A, option 1: gcloud
 
-Use this if `gcloud --version` works. Show each command before running it. Use any 6 random lowercase letters or digits for the project id suffix.
+Use this if `gcloud --version` works. Show each command before running it. Pick 6 random lowercase letters or digits for the project id suffix and **type the real id into every command**. Never paste `<random6>` literally: PowerShell treats `<` as an operator and the command fails. Example id: `inbox-sweep-k3x9qa`. Use the same id in steps 2 and 3.
 
 1. `gcloud auth login` (you do this one yourself, it opens a browser)
-2. `gcloud projects create inbox-sweep-<random6>`
-3. `gcloud config set project inbox-sweep-<random6>`
+2. `gcloud projects create inbox-sweep-k3x9qa` (example: use your own 6 characters)
+3. `gcloud config set project inbox-sweep-k3x9qa` (same id as step 2)
 4. `gcloud services enable gmail.googleapis.com`
 5. `gcloud services list --enabled` and look for `gmail.googleapis.com`
 

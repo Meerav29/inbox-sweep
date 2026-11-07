@@ -29,6 +29,7 @@ Full check list and error codes: `docs/details.md`, "Checking your setup".
 2. If `node_modules` does not exist, say so and run `npm install`. This is the one command you run without asking. `doctor` cannot run before it (its runner is missing).
 3. Run `npm run doctor -- --json`. Show a short checklist of what is done and what is left.
 4. If everything passes, say so, offer to start the app, and stop.
+5. If the user already said they only want the fake inbox, run `npm run doctor -- --demo` instead and skip the questions. A `WARN env_file` is fine there: the fake inbox starts without `.env`.
 
 ## 1. Ask only what changes the path
 
@@ -36,7 +37,7 @@ At most three questions, one at a time. Skip any the preflight already answered.
 
 1. "Do you want to try it with a fake inbox first, or go straight to your own Gmail?" (The fake inbox needs no keys.)
 2. "Is this a personal @gmail.com account, or a work or school (Google Workspace) account?" Workspace admins may block unverified apps or limit who can create Cloud projects. Warn, and suggest a personal account or asking the admin.
-3. "Do you already have a Google Cloud project you want to use?" If not, you will create one.
+3. "Do you already have a Google Cloud project you want to use?" If not, you will create one. If yes, skip creating it. With gcloud, ask for the project id and run `gcloud config set project <id>` (show it first). Either way, still confirm the Gmail API is enabled on that project (step 4).
 
 ## 2. Recommend one path
 
@@ -58,7 +59,7 @@ Skip any step whose check already passes, so the flow resumes where it stopped. 
 4. Google project and Gmail API. gcloud path or console path, see the reference. Check: `gcloud services list --enabled` shows `gmail.googleapis.com`.
 5. Consent screen: External, Testing, app name, support email. They must add their own address as a test user. Say plainly that skipping this gives "Access blocked" or a page that hangs, with no clear error.
 6. OAuth client: type **Web application** (not Desktop). Authorised redirect URI is the exact `redirect_uri` value from doctor. They paste the client ID and secret into `.env`. Check: `google_client`.
-7. Start the app: ask them to run `npm run dev` in their own terminal, so they own it. If you start it in the background instead, stop only the process you started, by its PID. `.env` is read once at start, so restart after every `.env` edit.
+7. Start the app: ask them to run `npm run dev` in their own terminal, so they own it. If you start it in the background instead, stop only the process you started, by its PID. On Windows in Git Bash, `$!` is not the Windows PID: read the `WINPID` column from `ps`, then run `MSYS_NO_PATHCONV=1 taskkill /PID <winpid> /T /F` (without that variable Git Bash rewrites `/PID`). In PowerShell, `Start-Process -PassThru` gives the right PID. `.env` is read once at start, so restart after every `.env` edit.
 8. Connect Gmail: open http://localhost:5173, press Connect Gmail. On "Google hasn't verified this app", press Advanced, then Continue (expected, it is their own app). Check: `gmail`.
 9. Folders: they pick at least one on the Folders screen in the app. Check: `folders`. Tuning folders and rules is `/refine`'s job.
 10. First run: tick **Dry run**, batch size 10, Start session. Dry run still sends email content to TypeSafe (and Anthropic, if set), but changes nothing in Gmail.
