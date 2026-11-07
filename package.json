@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "concurrently -n server,web \"tsx watch server/index.ts\" \"vite\"",
     "dev:fake": "concurrently -n server,web \"cross-env INBOX_SWEEP_FAKE=1 tsx watch server/index.ts\" \"vite\"",
+    "doctor": "tsx server/doctor/cli.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

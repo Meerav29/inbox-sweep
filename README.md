@@ -23,11 +23,13 @@ Then open http://localhost:5173 and press **Start session**.
 
 ## Use it on your own inbox
 
-Copy `.env.example` to `.env` and add three sets of keys:
+Copy `.env.example` to `.env` (or run `npm run doctor -- --init-env` to do it) and add three sets of keys:
 
 1. **Google:** a client ID and secret for your own OAuth client from the Google Cloud console. [Step-by-step](docs/details.md#google).
 2. **TypeSafe:** an API key from [typesafe.ai](https://typesafe.ai/) so Jev can make the decisions.
 3. **Anthropic (optional):** an API key so each card can say why it's asking. Claude Haiku writes that text, and cards still work without it.
+
+Run `npm run doctor` to check each key and the Gmail connection. It prints the exact redirect URI to give Google.
 
 Then run `npm run dev`, open http://localhost:5173, and the Setup screen has you connect Gmail and pick the folders it's allowed to file into.
 
