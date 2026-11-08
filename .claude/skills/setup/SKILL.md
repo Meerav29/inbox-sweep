@@ -74,7 +74,7 @@ Short summary: what is set up, what is optional and skipped. Then three things t
 
 - In Testing mode the Gmail connection expires every 7 days. Press Connect Gmail again. `doctor` reports it as `gmail_token_expired`.
 - Untick Dry run once the board looks right.
-- `/refine` is next, once it exists.
+- Next, run `/refine` to tune how cautious it is and set up folders to your taste.
 
 ## Errors
 
