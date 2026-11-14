@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { Context, MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { streamSSE } from 'hono/streaming';
+import { BATCH_SIZES } from '../shared/types';
 import type { BatchStatus, BatchView, Dest, Folder, SessionEvent, Settings, Thresholds } from '../shared/types';
 import { isArchiveName, isSystemLabel } from '../shared/labels';
 import type { Repo } from './db/repo';
@@ -76,7 +77,6 @@ function threadIdOf(b: Record<string, unknown>): string {
   return b.threadId;
 }
 
-const BATCH_SIZES = [10, 20, 30, 50];
 const UNIT_THRESHOLDS = ['guardNoul', 'importantQueue', 'needsReplyQueue', 'autoArchiveConfidence', 'proposeConfidence', 'staleConfidence', 'junkMaxKeep'] as const;
 
 function parseFolder(v: unknown, i: number): Folder {
@@ -102,7 +102,7 @@ export function parseSettingsPatch(b: Record<string, unknown>): Partial<Settings
         out.query = v;
         break;
       case 'batchSize':
-        if (typeof v !== 'number' || !BATCH_SIZES.includes(v)) throw bad('batchSize must be 10, 20, 30 or 50');
+        if (typeof v !== 'number' || !(BATCH_SIZES as readonly number[]).includes(v)) throw bad(`batchSize must be ${BATCH_SIZES.join(', ')}`);
         out.batchSize = v as Settings['batchSize'];
         break;
       case 'dryRun':

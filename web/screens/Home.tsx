@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { BATCH_SIZES } from '../../shared/types';
 import type { BatchStatus, SessionSummary, Settings, Stats } from '../../shared/types';
 import { api } from '../api';
 import { StatusPill } from '../components/Pill';
 import type { Status } from '../components/Pill';
 import { FILED_SOLID, FOLDER_PALETTE, archiveColor, keepColor } from '../destColor';
 
-const SIZES: Settings['batchSize'][] = [10, 20, 30, 50];
 const RED = { bg: 'var(--redbg)', fg: 'var(--red)' };
 const AMBER = FOLDER_PALETTE[1];
 const TEAL = FOLDER_PALETTE[0];
@@ -66,6 +67,31 @@ function Tile({ icon, tint, label, big, sub }: {
       <div className="big">{big}</div>
       <div className="tl">{label}</div>
       <div className="ts">{sub}</div>
+    </div>
+  );
+}
+
+/** A stepped slider over BATCH_SIZES. It moves by position, so the uneven sizes sit evenly spaced. The readout follows
+ *  the thumb at once; the save goes out once the thumb has rested, so a drag across stops makes one request. */
+function BatchSizeSlider({ value, disabled, onCommit }: { value: Settings['batchSize'] | undefined; disabled: boolean; onCommit: (size: Settings['batchSize']) => void }) {
+  const last = BATCH_SIZES.length - 1;
+  const saved = Math.max(0, BATCH_SIZES.findIndex((s) => s === value));
+  const [draft, setDraft] = useState<number | null>(null);
+  const at = draft ?? saved;
+  useEffect(() => {
+    if (draft === null) return;
+    if (draft === saved) { setDraft(null); return; }
+    const t = setTimeout(() => { onCommit(BATCH_SIZES[draft]); setDraft(null); }, 250);
+    return () => clearTimeout(t);
+  }, [draft, saved, onCommit]);
+  return (
+    <div className="sizeslider" style={{ '--p': at / last } as CSSProperties}>
+      <div className="ticks" aria-hidden="true">
+        {BATCH_SIZES.map((s, i) => <span key={s} className={i <= at ? 'on' : ''} />)}
+      </div>
+      <input type="range" min={0} max={last} step={1} value={at} disabled={disabled} aria-label="Emails per batch"
+        aria-valuetext={`${BATCH_SIZES[at]} emails`} onChange={(e) => setDraft(Number(e.target.value))} />
+      <output className="readout">{disabled ? '…' : `${BATCH_SIZES[at]} emails`}</output>
     </div>
   );
 }
@@ -131,12 +157,7 @@ export function Home({ onSession, onReview, onPast, onFolders }: Props) {
       <header className="dtop">
         <h1>inbox-sweep</h1>
         <div className="tools">
-          <div className="seg" role="group" aria-label="Emails per batch">
-            {SIZES.map((s) => (
-              <button key={s} className={settings?.batchSize === s ? 'on' : ''} aria-pressed={settings?.batchSize === s}
-                disabled={!settings} onClick={() => save({ batchSize: s })}>{s}</button>
-            ))}
-          </div>
+          <BatchSizeSlider value={settings?.batchSize} disabled={!settings} onCommit={(size) => save({ batchSize: size })} />
           <button className="btn dark" onClick={start} disabled={starting}>Start session</button>
         </div>
       </header>

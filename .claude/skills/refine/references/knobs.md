@@ -37,7 +37,7 @@ The triage rules (`triageSaysArchive`) never archive mail that reads as written 
 | `thresholds.staleConfidence` | 0.85 | lower, e.g. 0.75 | raise, e.g. 0.92 |
 | `thresholds.importantQueue` | 0.7 | see below | lower, e.g. 0.6: more important cards |
 | `thresholds.guardNoul` | 0.5 | see below | see below |
-| `batchSize` | 20 | 10, 20, 30 or 50; smaller means shorter sessions, not fewer questions | |
+| `batchSize` | 20 | 10, 20, 30, 50, 100 or 200 (a slider on Home); smaller means shorter sessions, not fewer questions | |
 | `query` | `in:inbox is:unread -category:promotions -category:social` | | |
 | `folders` | `[]` | | |
 | `dryRun` | false | | |

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from 'vitest';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { Setup } from '../../web/screens/Setup';
 import { Home } from '../../web/screens/Home';
 import { mergeFolders } from '../../web/screens/Folders';
@@ -93,9 +93,13 @@ test('Home marks a partly dry-run past session', async () => {
 test('Home saves the batch size through PUT /api/settings with a JSON body', async () => {
   stubApi([]);
   render(<Home onSession={() => {}} onReview={() => {}} onPast={() => {}} onFolders={() => {}} />);
-  const btn = await screen.findByRole('button', { name: '30' });
-  await waitFor(() => expect(btn).toHaveProperty('disabled', false));
-  btn.click();
+  const sel = (await screen.findByRole('slider', { name: 'Emails per batch' })) as HTMLInputElement;
+  await waitFor(() => expect(sel.disabled).toBe(false));
+  // Six stops, one per allowed size, moved by position.
+  expect([sel.min, sel.max, sel.step]).toEqual(['0', '5', '1']);
+  fireEvent.change(sel, { target: { value: '5' } });
+  // The readout follows the thumb at once; the save waits for it to rest.
+  expect(sel.getAttribute('aria-valuetext')).toBe('200 emails');
   const put = await waitFor(() => {
     const call = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find((c) => c[1]?.method === 'PUT');
     expect(call).toBeTruthy();
@@ -103,7 +107,7 @@ test('Home saves the batch size through PUT /api/settings with a JSON body', asy
   });
   expect(put[0]).toBe('/api/settings');
   expect(put[1].headers).toEqual({ 'Content-Type': 'application/json' });
-  expect(JSON.parse(put[1].body)).toEqual({ batchSize: 30 });
+  expect(JSON.parse(put[1].body)).toEqual({ batchSize: 200 });
 });
 
 test('mergeFolders defaults every label on at first visit, and keeps saved choices after', () => {
