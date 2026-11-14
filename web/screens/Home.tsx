@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { BATCH_SIZES } from '../../shared/types';
 import type { BatchStatus, SessionSummary, Settings, Stats } from '../../shared/types';
@@ -72,26 +72,36 @@ function Tile({ icon, tint, label, big, sub }: {
 }
 
 /** A stepped slider over BATCH_SIZES. It moves by position, so the uneven sizes sit evenly spaced. The readout follows
- *  the thumb at once; the save goes out once the thumb has rested, so a drag across stops makes one request. */
-function BatchSizeSlider({ value, disabled, onCommit }: { value: Settings['batchSize'] | undefined; disabled: boolean; onCommit: (size: Settings['batchSize']) => void }) {
+ *  the thumb at once; the save goes out once the thumb has rested, so a drag across stops makes one request. The draft
+ *  stays until that save has finished, so the thumb never jumps back to the old size while the request is in flight. */
+function BatchSizeSlider({ value, disabled, onCommit }: { value: Settings['batchSize'] | undefined; disabled: boolean; onCommit: (size: Settings['batchSize']) => Promise<void> | void }) {
   const last = BATCH_SIZES.length - 1;
   const saved = Math.max(0, BATCH_SIZES.findIndex((s) => s === value));
   const [draft, setDraft] = useState<number | null>(null);
+  const commit = useRef(onCommit);
+  commit.current = onCommit;
+  const inFlight = useRef<number | null>(null);
   const at = draft ?? saved;
   useEffect(() => {
-    if (draft === null) return;
+    if (draft === null || inFlight.current === draft) return;
     if (draft === saved) { setDraft(null); return; }
-    const t = setTimeout(() => { onCommit(BATCH_SIZES[draft]); setDraft(null); }, 250);
+    const t = setTimeout(() => {
+      inFlight.current = draft;
+      void Promise.resolve(commit.current(BATCH_SIZES[draft])).finally(() => {
+        inFlight.current = null;
+        setDraft((d) => (d === draft ? null : d));
+      });
+    }, 250);
     return () => clearTimeout(t);
-  }, [draft, saved, onCommit]);
+  }, [draft, saved]);
   return (
     <div className="sizeslider" style={{ '--p': at / last } as CSSProperties}>
       <div className="ticks" aria-hidden="true">
         {BATCH_SIZES.map((s, i) => <span key={s} className={i <= at ? 'on' : ''} />)}
       </div>
       <input type="range" min={0} max={last} step={1} value={at} disabled={disabled} aria-label="Emails per batch"
-        aria-valuetext={`${BATCH_SIZES[at]} emails`} onChange={(e) => setDraft(Number(e.target.value))} />
-      <output className="readout">{disabled ? '…' : `${BATCH_SIZES[at]} emails`}</output>
+        aria-valuetext={disabled ? 'Loading' : `${BATCH_SIZES[at]} emails`} onChange={(e) => setDraft(Number(e.target.value))} />
+      <output className="readout" aria-live="off">{disabled ? '…' : `${BATCH_SIZES[at]} emails`}</output>
     </div>
   );
 }

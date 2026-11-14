@@ -41,8 +41,10 @@ test('Setup shows a sign-in error line when asked', () => {
 
 const ZERO_STATS: Stats = { archived: 0, filed: 0, kept: 0, askedYou: 0, decided: 0, important: 0, unfinished: 0 };
 function stubApi(sessions: SessionSummary[], stats: Stats = ZERO_STATS) {
-  vi.stubGlobal('fetch', vi.fn(async (url: string) => {
-    const body = url === '/api/sessions' ? sessions : url === '/api/settings' ? DEFAULT_SETTINGS
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: { method?: string; body?: string }) => {
+    // Like the real server, a PUT answers with the settings as saved.
+    const body = url === '/api/sessions' ? sessions
+      : url === '/api/settings' ? (init?.method === 'PUT' ? { ...DEFAULT_SETTINGS, ...JSON.parse(init.body ?? '{}') } : DEFAULT_SETTINGS)
       : url === '/api/stats' ? stats
       : url.endsWith('/resume') ? { batchId: 'b9', status: 'running' } : {};
     return new Response(JSON.stringify(body), { status: 200 });
@@ -97,14 +99,20 @@ test('Home saves the batch size through PUT /api/settings with a JSON body', asy
   await waitFor(() => expect(sel.disabled).toBe(false));
   // Six stops, one per allowed size, moved by position.
   expect([sel.min, sel.max, sel.step]).toEqual(['0', '5', '1']);
+  const puts = () => (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter((c) => c[1]?.method === 'PUT');
+  // A drag passes over several stops before it rests on the last one.
+  fireEvent.change(sel, { target: { value: '3' } });
   fireEvent.change(sel, { target: { value: '5' } });
   // The readout follows the thumb at once; the save waits for it to rest.
   expect(sel.getAttribute('aria-valuetext')).toBe('200 emails');
+  expect(puts()).toHaveLength(0);
   const put = await waitFor(() => {
-    const call = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find((c) => c[1]?.method === 'PUT');
-    expect(call).toBeTruthy();
-    return call!;
+    expect(puts()).toHaveLength(1);
+    return puts()[0];
   });
+  // Once the save has finished the thumb stays where it was dropped, and no second request follows.
+  await waitFor(() => expect(sel.value).toBe('5'));
+  expect(puts()).toHaveLength(1);
   expect(put[0]).toBe('/api/settings');
   expect(put[1].headers).toEqual({ 'Content-Type': 'application/json' });
   expect(JSON.parse(put[1].body)).toEqual({ batchSize: 200 });
