@@ -65,7 +65,13 @@ export function oauthRoutes(config: Config, tokenPath: string, client: OAuth2Cli
     } catch {
       return c.redirect(`${config.webOrigin}/?auth=error`);
     }
-    onSignedIn();
+    // The token is already saved: if the app can't reload it now, say so but still send the user back. The next request
+    // will try again to load it.
+    try {
+      onSignedIn();
+    } catch (e) {
+      console.error('inbox-sweep: signed in, but reloading Gmail failed:', e);
+    }
     return c.redirect(`${config.webOrigin}/`);
   });
 
