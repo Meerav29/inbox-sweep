@@ -38,8 +38,8 @@ function persistRefreshes(client: OAuth2Client, tokenPath: string): void {
   });
 }
 
-/** `client` is injectable for tests. */
-export function oauthRoutes(config: Config, tokenPath: string, client: OAuth2Client | null = makeClient(config)): Hono {
+/** `client` is injectable for tests. `onSignedIn` runs once a sign-in has stored its token, so the running app can pick it up. */
+export function oauthRoutes(config: Config, tokenPath: string, client: OAuth2Client | null = makeClient(config), onSignedIn: () => void = () => {}): Hono {
   const app = new Hono();
   const pendingStates = new Set<string>();
   if (client) persistRefreshes(client, tokenPath);
@@ -65,6 +65,7 @@ export function oauthRoutes(config: Config, tokenPath: string, client: OAuth2Cli
     } catch {
       return c.redirect(`${config.webOrigin}/?auth=error`);
     }
+    onSignedIn();
     return c.redirect(`${config.webOrigin}/`);
   });
 

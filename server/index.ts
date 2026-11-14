@@ -27,7 +27,7 @@ const services = config.fake
   })
   : realServices({ repo, hub, config, tokenPath });
 
-const app = createApp({ repo, hub, services, port: config.port, oauth: oauthRoutes(config, tokenPath) });
+const app = createApp({ repo, hub, services, port: config.port, oauth: oauthRoutes(config, tokenPath, undefined, () => services.authChanged()) });
 
 // Loopback only: this process holds a Gmail token.
 serve({ fetch: app.fetch, port: config.port, hostname: '127.0.0.1' }, (info) => {
