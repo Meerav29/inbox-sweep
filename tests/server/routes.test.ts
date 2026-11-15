@@ -454,7 +454,7 @@ describe('validation', () => {
 
   test('settings patches are typed', async () => {
     const bad: unknown[] = [
-      { batchSize: 25 }, { batchSize: '20' }, { query: 5 }, { dryRun: 'true' },
+      { batchSize: 25 }, { batchSize: 150 }, { batchSize: 0 }, { batchSize: '20' }, { query: 5 }, { dryRun: 'true' },
       { folders: 'Receipts' }, { folders: [{ name: 'Receipts' }] }, { folders: [{ name: '', enabled: true }] },
       { folders: [{ name: 'Receipts', enabled: true, description: 3 }] },
       { thresholds: { guardNoul: 1.5 } }, { thresholds: { proposeConfidence: -0.1 } }, { thresholds: { importantQueue: 'x' } },
@@ -468,6 +468,11 @@ describe('validation', () => {
       thresholds: { guardNoul: 0, autoArchiveConfidence: 1, recentDays: 3, staleDays: 30, junkMaxKeep: 0.2 }, dryRun: true,
     });
     expect(ok.status).toBe(200);
+    for (const n of [100, 200]) {
+      expect((await send('PUT', '/api/settings', { batchSize: n })).status).toBe(200);
+      expect(repo.getSettings().batchSize).toBe(n);
+    }
+    await send('PUT', '/api/settings', { batchSize: 30 });
     expect(repo.getSettings()).toMatchObject({ batchSize: 30, query: 'in:inbox', dryRun: true,
       thresholds: { guardNoul: 0, autoArchiveConfidence: 1, recentDays: 3, importantQueue: 0.7, staleDays: 30, junkMaxKeep: 0.2, staleConfidence: 0.85 } });
   });

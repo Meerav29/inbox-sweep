@@ -26,7 +26,10 @@ export interface Thresholds { guardNoul: number; importantQueue: number; needsRe
   /** Mail at least this many days old may be archived as stale. */ staleDays: number;
   /** Minimum `stale` answer for the stale rule. */ staleConfidence: number;
   /** Highest `keep` probability at which the junk rule still archives or proposes. */ junkMaxKeep: number }
-export interface Settings { query: string; batchSize: 10 | 20 | 30 | 50; folders: Folder[]; thresholds: Thresholds; dryRun: boolean }
+/** Allowed emails per batch; the single source for the type, the settings API and the home screen picker. */
+export const BATCH_SIZES = [10, 20, 30, 50, 100, 200] as const;
+export type BatchSize = typeof BATCH_SIZES[number];
+export interface Settings { query: string; batchSize: BatchSize; folders: Folder[]; thresholds: Thresholds; dryRun: boolean }
 export interface SessionSummary { id: string; startedAt: string; batches: number; total: number;
   split: { archived: number; filed: number; kept: number; you: number; important: number }; unfinishedBatchId?: string;
   /** The session's newest non-discarded batch with emails (else newest non-discarded): what a past-session row opens. */ lastBatchId?: string;

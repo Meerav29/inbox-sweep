@@ -25,6 +25,30 @@ a{color:var(--strong)}
 .dtop h1{font-size:20px;font-weight:600;color:var(--strong);letter-spacing:-.01em;flex:1 1 auto}
 .dtop .tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .dtop .btn.dark{padding:9px 18px;border-radius:9px}
+/* batch size slider: the ticks and the fill are inset by half a thumb so they line up with where the thumb stops */
+.sizeslider{--w:144px;--thumb:18px;--track:4px;position:relative;display:flex;align-items:center;gap:12px}
+.sizeslider .ticks{position:absolute;left:calc(var(--thumb) / 2);width:calc(var(--w) - var(--thumb));top:50%;height:0;display:flex;justify-content:space-between;pointer-events:none}
+.sizeslider .ticks span{width:6px;height:6px;margin:-3px -3px 0;border-radius:50%;background:#fff;border:1.5px solid var(--line);transition:border-color .2s var(--ease)}
+.sizeslider .ticks span.on{border-color:var(--strong);background:var(--strong)}
+.sizeslider input{-webkit-appearance:none;appearance:none;position:relative;flex:none;width:var(--w);height:24px;margin:0;background:none;cursor:pointer}
+.sizeslider input:disabled{cursor:default;opacity:.5}
+.sizeslider input:focus-visible{outline:none}
+.sizeslider input::-webkit-slider-runnable-track{height:var(--track);border-radius:99px;
+  background:linear-gradient(to right,var(--strong) calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--p)),var(--line) 0)}
+.sizeslider input::-moz-range-track{height:var(--track);border-radius:99px;background:var(--line)}
+.sizeslider input::-moz-range-progress{height:var(--track);border-radius:99px;background:var(--strong)}
+.sizeslider input::-webkit-slider-thumb{-webkit-appearance:none;width:var(--thumb);height:var(--thumb);margin-top:calc((var(--track) - var(--thumb)) / 2);
+  border-radius:50%;background:#fff;border:1.5px solid var(--strong);box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .25s var(--spring),box-shadow .2s var(--ease)}
+.sizeslider input::-moz-range-thumb{width:calc(var(--thumb) - 3px);height:calc(var(--thumb) - 3px);border-radius:50%;background:#fff;border:1.5px solid var(--strong);box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .25s var(--spring)}
+.sizeslider input:not(:disabled):active::-webkit-slider-thumb{transform:scale(1.18);box-shadow:0 2px 8px rgba(0,0,0,.22)}
+.sizeslider input:not(:disabled):active::-moz-range-thumb{transform:scale(1.18)}
+.sizeslider input:focus-visible::-webkit-slider-thumb{outline:2px solid var(--strong);outline-offset:3px}
+.sizeslider input:focus-visible::-moz-range-thumb{outline:2px solid var(--strong);outline-offset:3px}
+.sizeslider .readout{min-width:64px;font-size:12px;color:var(--strong);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* one rule per engine: a selector list is dropped whole when any selector in it is unknown to the browser */
+@media (prefers-reduced-motion:reduce){.sizeslider *{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.sizeslider input::-webkit-slider-thumb{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.sizeslider input::-moz-range-thumb{transition:none!important}}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:2px}
 .seg button{border:0;background:none;padding:4px 10px;border-radius:6px;color:var(--subtle);font-size:12px}
 .seg button.on{background:var(--selected);color:var(--strong)}
